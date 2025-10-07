@@ -39,3 +39,13 @@
 
 # debug information files
 *.dwo
+
+#solution files
+*.sln
+
+# directories
+.git/
+
+x64/
+.git/
+src/x64/

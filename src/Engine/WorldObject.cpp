@@ -1,7 +1,7 @@
 #include "WorldObject.h"
 
 WorldObject::WorldObject(float x, float y, float width, float height) {
-	pos = {x, y};
+	pos = { x, y };
 	size = { width, height };
 	for (int i = 2; i < 12; i += 3) {
 		vertices[i] = 0.0f;

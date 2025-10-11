@@ -1,10 +1,9 @@
 #pragma once
 #include "DynamicObject.h"
 
-class Player: public DynamicObject
+class Player : public DynamicObject
 {
 public:
 	using DynamicObject::DynamicObject;
 
 };
-

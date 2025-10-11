@@ -1,4 +1,4 @@
-#include <glm-master/glm/glm.hpp>
+#include <glm.hpp>
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -8,7 +8,7 @@
 #include <thread>
 using namespace std;
 
- 
+
 unsigned int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
 
 
@@ -27,7 +27,7 @@ void processInput(GLFWwindow* window) {
 		glfwSetWindowShouldClose(window, true);
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-				
+
 	}
 
 }
@@ -142,7 +142,7 @@ int main() {
 
 
 	Player player(0.0f, 0.0f, 40.0f, 60.0f);
-	player.forces[0] = { 0.0f, -0.000001f };
+	player.gravity = 0.000001f;
 	player.addForce(glm::vec2(0.000005f, 0.00001f), Continuous);
 
 	//setting up the shader program
@@ -153,7 +153,7 @@ int main() {
 	glUniform2f(cameraSizeLoc, 1.5f, 1.5f);
 	int windowSizeLoc = glGetUniformLocation(shaderProgram, "windowSize");
 	glUniform2f(windowSizeLoc, (float)WINDOW_WIDTH, (float)WINDOW_HEIGHT);
-	
+
 	unsigned int VBO;
 	unsigned int VAO;
 	unsigned int EBO;
@@ -175,18 +175,18 @@ int main() {
 	glEnableVertexAttribArray(0);
 
 	glClearColor(40.0f / 255, 40.0f / 255, 40.0f / 255, 1.0f);
-	
+
 	//finally, we can create the render loop
 	auto last_frame = std::chrono::high_resolution_clock::now();
 	while (!glfwWindowShouldClose(window)) {
-		
+
 		//input
 		processInput(window);
 
 		//physycs updates
 		auto now = std::chrono::high_resolution_clock::now();
 		double deltaTime = std::chrono::duration<double>(now - last_frame).count();
-		cout << 1/ deltaTime << endl;
+		cout << 1 / deltaTime << endl;
 		last_frame = now;
 		player.physicsUpdate(1);
 
@@ -196,8 +196,8 @@ int main() {
 		glUseProgram(shaderProgram);
 
 		glBindVertexArray(VAO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(player.vertices), player.vertices, GL_STREAM_DRAW);			
-		
+		glBufferData(GL_ARRAY_BUFFER, sizeof(player.vertices), player.vertices, GL_STREAM_DRAW);
+
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);//if we didn't have an EBO, this would be glDrawarrays()
 		glBindVertexArray(0);

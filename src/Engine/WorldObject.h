@@ -1,6 +1,6 @@
 #pragma once
 #include <utility>
-#include <glm-master/glm/glm.hpp>
+#include <glm.hpp>
 #include <map>
 
 

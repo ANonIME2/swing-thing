@@ -9,7 +9,9 @@
 using namespace std;
 
 
-unsigned int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
+unsigned int WINDOW_WIDTH = 1920, WINDOW_HEIGHT = 1080;
+
+Player player(0.0f, 0.0f, 40.0f, 60.0f, 0.0025f);
 
 
 
@@ -27,6 +29,10 @@ void processInput(GLFWwindow* window) {
 		glfwSetWindowShouldClose(window, true);
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		
+	}
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		player.addForce(glm::vec2(0.0f, 1.0f), Impulse);
 
 	}
 
@@ -141,10 +147,7 @@ int main() {
 	glDeleteShader(fragmentShader);
 
 
-	Player player(0.0f, 0.0f, 40.0f, 60.0f);
-	player.gravity = 0.000001f;
-	player.addForce(glm::vec2(0.000005f, 0.00001f), Continuous);
-
+	player.gravity = 0.08f;
 	//setting up the shader program
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(player.indices), player.indices, GL_STREAM_DRAW);
 	int cameraPosLoc = glGetUniformLocation(shaderProgram, "cameraPos");

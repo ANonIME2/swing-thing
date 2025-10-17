@@ -28,14 +28,14 @@ DynamicObject::DynamicObject(float x, float y, float width, float height, float 
 void DynamicObject::physicsUpdate(double time)
 {
 	glm::vec2 time_v = { time, time };
-	linearSpeed -= gravity * time_v;
+	linearSpeed.y -= gravity * time;
 	for (int i = 0; i < Forces.size(); i++) {
 		linearSpeed += Forces[i].force * time_v;
 	}
 
 	linearSpeed += acceleration * time_v;
 
-	linearSpeed -= -linearSpeed * glm::length(linearSpeed) * linearDamping * time_v;
+	linearSpeed += -linearSpeed * glm::length(linearSpeed) * linearDamping * time_v;
 	pos += linearSpeed;
 	vertices[0] = pos.x;
 	vertices[1] = pos.y;

@@ -11,6 +11,7 @@ public:
 	int addForce(glm::vec2 F, ForceType type);
 	int addForce(Force F);
 	bool removeForce(int id);
+	
 	glm::vec2 linearSpeed, acceleration;
 	float linearDamping, angularDamping;
 	float gravity;

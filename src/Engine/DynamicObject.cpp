@@ -1,3 +1,4 @@
+#include <iostream>
 #include "DynamicObject.h"
 #include "Force.h"
 
@@ -9,7 +10,7 @@ DynamicObject::DynamicObject(float x, float y, float width, float height, float 
 	acceleration = glm::vec2(0.0f, 0.0f);
 	this->linearDamping = linearDamping;
 	this->angularDamping = angularDamping;
-
+	this->gravity = gravity;
 	for (int i = 2; i < 12; i += 3) {
 		vertices[i] = 0.0f;
 	}
@@ -27,6 +28,7 @@ DynamicObject::DynamicObject(float x, float y, float width, float height, float 
 //updates all physics related things. speed, acceleration, position. handles Continuous forces
 void DynamicObject::physicsUpdate(double time)
 {
+	
 	glm::vec2 time_v = { time, time };
 	linearSpeed.y -= gravity * time;
 	for (int i = 0; i < Forces.size(); i++) {
@@ -54,7 +56,9 @@ void DynamicObject::physicsUpdate(double time)
 int DynamicObject::addForce(glm::vec2 F, ForceType type)
 {
 	if (type == Impulse) {
-		linearSpeed += F;
+		std::cout << "before speed = " << linearSpeed.x << "  " << linearSpeed.y << std::endl;
+		linearSpeed.x += F.x;linearSpeed.y += F.y;
+		std::cout << "after speed = " << linearSpeed.x << "  " << linearSpeed.y << std::endl;
 	}
 	else if (type == Continuous || type == Walk) {
 		//pick an index

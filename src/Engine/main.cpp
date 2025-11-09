@@ -9,11 +9,11 @@
 using namespace std;
 
 
-unsigned int WINDOW_WIDTH = 1920, WINDOW_HEIGHT = 1080;
-
-Player player(0.0f, 0.0f, 40.0f, 60.0f, 0.0025f);
-
-
+unsigned int WINDOW_WIDTH = 1200, WINDOW_HEIGHT = 800;
+Player player(0.0f, 0.0f, 40.0f, 60.0f, 0.01f, 0.0f, 0.001f);
+unsigned int VBO;
+unsigned int VAO;
+unsigned int EBO;
 
 //activated when the window changes size
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -32,52 +32,27 @@ void processInput(GLFWwindow* window) {
 		
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		player.addForce(glm::vec2(0.0f, 1.0f), Impulse);
-
+		if (!player.jumpedLastFrame) {
+			player.jump();
+			player.jumpedLastFrame = true;
+		}
 	}
+	else {
+		player.jumpedLastFrame = false;
+	}
+	
+}
+
+void drawPlayer() {
+	glBindVertexArray(VAO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(player.vertices), player.vertices, GL_STREAM_DRAW);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);//if we didn't have an EBO, this would be glDrawarrays()
+	glBindVertexArray(0);
 
 }
 
-
-int main() {
-	//initialising everything
-	//WINDOW INITIALISATION STUFF
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	//creating the window
-	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Learn OpenGL", NULL, NULL);
-	if (window == NULL) {
-		cout << "Failed to create GLFW window" << endl;
-		glfwTerminate();
-		return -1;
-	}
-	glfwMakeContextCurrent(window);
-
-	//initialising GLAD
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		cout << "Failed to initialize GLAD" << endl;
-		return -1;
-	}
-
-	/*set the coordinate system.
-	This line tells open gl that the bottom-left corner has the coordinates(0, 0)
-	and that the window is WINDOW_WIDTH px wide and WINDOW_HEIGHT px tall
-	*/
-	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-	/*it's like addEventListener for the window changing size.
-	it calls the function framebuffer_size_callback*/
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	framebuffer_size_callback(window, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-	//vsync
-	glfwSwapInterval(1);
-
-
-	//ACTUALL OPENGL STUFF
+//ACTUALL OPENGL STUFF
+void setUpAVO() {
 	//shader setup
 	//vertex shader
 	const char* vertexShaderSource =
@@ -147,7 +122,7 @@ int main() {
 	glDeleteShader(fragmentShader);
 
 
-	player.gravity = 0.08f;
+
 	//setting up the shader program
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(player.indices), player.indices, GL_STREAM_DRAW);
 	int cameraPosLoc = glGetUniformLocation(shaderProgram, "cameraPos");
@@ -157,9 +132,7 @@ int main() {
 	int windowSizeLoc = glGetUniformLocation(shaderProgram, "windowSize");
 	glUniform2f(windowSizeLoc, (float)WINDOW_WIDTH, (float)WINDOW_HEIGHT);
 
-	unsigned int VBO;
-	unsigned int VAO;
-	unsigned int EBO;
+
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 	glGenVertexArrays(1, &VAO);
@@ -178,6 +151,50 @@ int main() {
 	glEnableVertexAttribArray(0);
 
 	glClearColor(40.0f / 255, 40.0f / 255, 40.0f / 255, 1.0f);
+}
+
+int main() {
+	//initialising everything
+	//WINDOW INITIALISATION STUFF
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	//creating the window
+	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Learn OpenGL", NULL, NULL);
+	if (window == NULL) {
+		cout << "Failed to create GLFW window" << endl;
+		glfwTerminate();
+		return -1;
+	}
+	glfwMakeContextCurrent(window);
+
+	//initialising GLAD
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		cout << "Failed to initialize GLAD" << endl;
+		return -1;
+	}
+
+	/*set the coordinate system.
+	This line tells open gl that the bottom-left corner has the coordinates(0, 0)
+	and that the window is WINDOW_WIDTH px wide and WINDOW_HEIGHT px tall
+	*/
+	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	/*it's like addEventListener for the window changing size.
+	it calls the function framebuffer_size_callback*/
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	framebuffer_size_callback(window, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	//vsync
+	glfwSwapInterval(1);
+
+	setUpAVO();
+
+	
+	
+	
 
 	//finally, we can create the render loop
 	auto last_frame = std::chrono::high_resolution_clock::now();
@@ -189,25 +206,18 @@ int main() {
 		//physycs updates
 		auto now = std::chrono::high_resolution_clock::now();
 		double deltaTime = std::chrono::duration<double>(now - last_frame).count();
-		cout << 1 / deltaTime << endl;
 		last_frame = now;
 		player.physicsUpdate(1);
 
 
 		//rendering commands here
 		glClear(GL_COLOR_BUFFER_BIT);
-		glUseProgram(shaderProgram);
+		drawPlayer();
 
-		glBindVertexArray(VAO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(player.vertices), player.vertices, GL_STREAM_DRAW);
-
-
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);//if we didn't have an EBO, this would be glDrawarrays()
-		glBindVertexArray(0);
-
+		
+		
 		//check and call events and swap the buffers
 		glfwPollEvents();
-		glUniform2f(windowSizeLoc, (float)WINDOW_WIDTH, (float)WINDOW_HEIGHT);
 		glfwSwapBuffers(window);
 
 	}

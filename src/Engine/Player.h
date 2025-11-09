@@ -5,5 +5,6 @@ class Player : public DynamicObject
 {
 public:
 	using DynamicObject::DynamicObject;
-
+	void jump();
+	bool jumpedLastFrame = false;
 };

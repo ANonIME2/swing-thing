@@ -10,7 +10,8 @@
 
 
 unsigned int WINDOW_WIDTH = 1200, WINDOW_HEIGHT = 800;
-Player player(0.0f, 0.0f, 40.0f, 60.0f, 0.01f, 0.0f, 0.0f);
+Player player(-30.2f, 0.0f, 40.0f, 60.0f, 0.01f, 0.0f, 0.001f);
+DynamicObject otherObject(30.0f, -30.0f, 80.0f, 60.0f, 0.01f, 0.0f, 0.0f);
 //unsigned int VBO;
 //unsigned int VAO;
 //unsigned int EBO;
@@ -35,6 +36,10 @@ void processInput(GLFWwindow* window) {
 		if (!player.jumpedLastFrame) {
 			player.jump();
 			player.jumpedLastFrame = true;
+			for (int i = 0; i < sizeof(player.vertices) / sizeof(float); i++) {
+				std::cout << player.vertices[i] << " ";
+			}
+			std::cout << std::endl;
 		}
 	}
 	else {
@@ -109,7 +114,6 @@ auto setUpShaderProgram() {
 		//telling opengl to use this program from now on
 		glUseProgram(shaderProgram);
 		//setting up the shader program
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(player.indices), player.indices, GL_STREAM_DRAW);
 		int cameraPosLoc = glGetUniformLocation(shaderProgram, "cameraPos");
 		glUniform3f(cameraPosLoc, 0.0f, 0.0f, 1.0f);
 		int cameraSizeLoc = glGetUniformLocation(shaderProgram, "cameraSize");
@@ -197,8 +201,9 @@ int main() {
 
 
 
-
+	setUpShaderProgram();
 	player.setUpAVO();
+	otherObject.setUpAVO();
 
 	glClearColor(40.0f / 255, 40.0f / 255, 40.0f / 255, 1.0f);
 	//finally, we can create the render loop
@@ -213,10 +218,11 @@ int main() {
 		double deltaTime = std::chrono::duration<double>(now - last_frame).count();
 		last_frame = now;
 		player.physicsUpdate(1);
-
+		otherObject.physicsUpdate(1);
 		//rendering commands here
 		glClear(GL_COLOR_BUFFER_BIT);
 		player.render();
+		otherObject.render();
 
 		
 		

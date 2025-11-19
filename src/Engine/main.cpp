@@ -6,7 +6,7 @@
 #include "Player.h"
 #include <chrono>
 #include <thread>
-using namespace std;
+
 
 
 unsigned int WINDOW_WIDTH = 1200, WINDOW_HEIGHT = 800;
@@ -77,7 +77,7 @@ void setUpAVO() {
 
 	if (!success) {
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << endl;
+		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
 
 	//fragment shader
@@ -97,7 +97,7 @@ void setUpAVO() {
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << endl;
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
 
 	//creating a shader program and linking the shaders to it
@@ -164,7 +164,7 @@ int main() {
 	//creating the window
 	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Learn OpenGL", NULL, NULL);
 	if (window == NULL) {
-		cout << "Failed to create GLFW window" << endl;
+		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
@@ -172,7 +172,7 @@ int main() {
 
 	//initialising GLAD
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		cout << "Failed to initialize GLAD" << endl;
+		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 

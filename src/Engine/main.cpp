@@ -1,19 +1,19 @@
 #include <glm.hpp>
-#include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <cstdlib>
 #include "Player.h"
 #include <chrono>
 #include <thread>
+#include <iostream>
 
 
 
 unsigned int WINDOW_WIDTH = 1200, WINDOW_HEIGHT = 800;
-Player player(0.0f, 0.0f, 40.0f, 60.0f, 0.01f, 0.0f, 0.001f);
-unsigned int VBO;
-unsigned int VAO;
-unsigned int EBO;
+Player player(0.0f, 0.0f, 40.0f, 60.0f, 0.01f, 0.0f, 0.0f);
+//unsigned int VBO;
+//unsigned int VAO;
+//unsigned int EBO;
 
 //activated when the window changes size
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -43,13 +43,6 @@ void processInput(GLFWwindow* window) {
 	
 }
 
-void drawPlayer() {
-	glBindVertexArray(VAO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(player.vertices), player.vertices, GL_STREAM_DRAW);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);//if we didn't have an EBO, this would be glDrawarrays()
-	glBindVertexArray(0);
-
-}
 
 //ACTUALL OPENGL STUFF
 auto setUpShaderProgram() {
@@ -131,30 +124,40 @@ auto setUpShaderProgram() {
 	return shaderProgram;
 }
 
-void setUpAVO() {
-	
 
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
-	glGenVertexArrays(1, &VAO);
-
-	//binding VAO, VBO, EBO
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(player.vertices), player.vertices, GL_STREAM_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(player.indices), player.indices, GL_STREAM_DRAW);
-
-
-	//set our vertex attributes pointers. essentially, telling opengl how our vertex data is formated
-	//https://learnopengl.com/img/getting-started/vertex_attribute_pointer.png
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glClearColor(40.0f / 255, 40.0f / 255, 40.0f / 255, 1.0f);
-}
+//void drawPlayer() {
+//	glBindVertexArray(VAO);
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(player.vertices), player.vertices, GL_STREAM_DRAW);
+//	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);//if we didn't have an EBO, this would be glDrawarrays()
+//	glBindVertexArray(0);
+//
+//}
+//
+//void setUpAVO() {
+//	
+//
+//	glGenBuffers(1, &VBO);
+//	glGenBuffers(1, &EBO);
+//	glGenVertexArrays(1, &VAO);
+//
+//	//binding VAO, VBO, EBO
+//	glBindVertexArray(VAO);
+//	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(player.vertices), player.vertices, GL_STREAM_DRAW);
+//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(player.indices), player.indices, GL_STREAM_DRAW);
+//
+//
+//	//set our vertex attributes pointers. essentially, telling opengl how our vertex data is formated
+//	//https://learnopengl.com/img/getting-started/vertex_attribute_pointer.png
+//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+//	glEnableVertexAttribArray(0);
+//
+//	glClearColor(40.0f / 255, 40.0f / 255, 40.0f / 255, 1.0f);
+//}
 
 int main() {
+
 	//initialising everything
 	//WINDOW INITIALISATION STUFF
 	glfwInit();
@@ -191,12 +194,13 @@ int main() {
 	//vsync
 	glfwSwapInterval(1);
 
-	setUpAVO();
 
-	
-	
-	
 
+
+
+	player.setUpAVO();
+
+	glClearColor(40.0f / 255, 40.0f / 255, 40.0f / 255, 1.0f);
 	//finally, we can create the render loop
 	auto last_frame = std::chrono::high_resolution_clock::now();
 	while (!glfwWindowShouldClose(window)) {
@@ -212,7 +216,7 @@ int main() {
 
 		//rendering commands here
 		glClear(GL_COLOR_BUFFER_BIT);
-		drawPlayer();
+		player.render();
 
 		
 		

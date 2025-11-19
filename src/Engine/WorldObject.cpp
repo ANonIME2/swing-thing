@@ -14,7 +14,9 @@ WorldObject::WorldObject(float x, float y, float width, float height) {
 	vertices[7] = pos.y + height;
 	vertices[9] = pos.x + width;
 	vertices[10] = pos.y;
-
+	VBO = 0;
+	VAO = 0;
+	EBO = 0;
 	//indices[0] = 0;
 	//indices[1] = 1;
 	//indices[2] = 3;
@@ -23,3 +25,44 @@ WorldObject::WorldObject(float x, float y, float width, float height) {
 	//indices[5] = 3;
 }
 
+void WorldObject::render()
+{
+	glBindVertexArray(this->VAO);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);//if we didn't have an EBO, this would be glDrawarrays()
+
+	// Allocate space to receive the data
+	std::vector<int> data;
+	data.resize(6);
+	// Read data from the buffer into CPU memory
+	glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, data.size() * sizeof(float), data.data());
+	for (int i = 0; i < 6; i++) {
+		std::cout << data[i] << " ";
+	}
+	std::cout << std::endl;
+	glBindVertexArray(0);
+
+	
+}
+
+void WorldObject::setUpAVO() {
+
+	glGenVertexArrays(1, &this->VAO);
+	glGenBuffers(1, &this->VBO);
+	glGenBuffers(1, &this->EBO);
+
+	//binding VAO, VBO, EBO
+	glBindVertexArray(this->VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(this->vertices), this->vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(this->indices), this->indices, GL_STATIC_DRAW);
+	
+	//set our vertex attributes pointers. essentially, telling opengl how our vertex data is formated
+	//https://learnopengl.com/img/getting-started/vertex_attribute_pointer.png
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+}

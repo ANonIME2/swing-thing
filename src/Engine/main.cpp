@@ -209,7 +209,7 @@ int main() {
 		last_frame = now;
 		player.physicsUpdate(1);
 
-
+		std::cout << "dupa"<<std::endl;
 		//rendering commands here
 		glClear(GL_COLOR_BUFFER_BIT);
 		drawPlayer();

@@ -52,7 +52,7 @@ void drawPlayer() {
 }
 
 //ACTUALL OPENGL STUFF
-void setUpAVO() {
+auto setUpShaderProgram() {
 	//shader setup
 	//vertex shader
 	const char* vertexShaderSource =
@@ -115,23 +115,24 @@ void setUpAVO() {
 	else {
 		//telling opengl to use this program from now on
 		glUseProgram(shaderProgram);
+		//setting up the shader program
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(player.indices), player.indices, GL_STREAM_DRAW);
+		int cameraPosLoc = glGetUniformLocation(shaderProgram, "cameraPos");
+		glUniform3f(cameraPosLoc, 0.0f, 0.0f, 1.0f);
+		int cameraSizeLoc = glGetUniformLocation(shaderProgram, "cameraSize");
+		glUniform2f(cameraSizeLoc, 1.5f, 1.5f);
+		int windowSizeLoc = glGetUniformLocation(shaderProgram, "windowSize");
+		glUniform2f(windowSizeLoc, (float)WINDOW_WIDTH, (float)WINDOW_HEIGHT);
 	}
 
 	//deleting shader objects, since we don't need them anymore
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
+	return shaderProgram;
+}
 
-
-
-	//setting up the shader program
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(player.indices), player.indices, GL_STREAM_DRAW);
-	int cameraPosLoc = glGetUniformLocation(shaderProgram, "cameraPos");
-	glUniform3f(cameraPosLoc, 0.0f, 0.0f, 1.0f);
-	int cameraSizeLoc = glGetUniformLocation(shaderProgram, "cameraSize");
-	glUniform2f(cameraSizeLoc, 1.5f, 1.5f);
-	int windowSizeLoc = glGetUniformLocation(shaderProgram, "windowSize");
-	glUniform2f(windowSizeLoc, (float)WINDOW_WIDTH, (float)WINDOW_HEIGHT);
-
+void setUpAVO() {
+	
 
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
@@ -209,7 +210,6 @@ int main() {
 		last_frame = now;
 		player.physicsUpdate(1);
 
-		std::cout << "dupa"<<std::endl;
 		//rendering commands here
 		glClear(GL_COLOR_BUFFER_BIT);
 		drawPlayer();

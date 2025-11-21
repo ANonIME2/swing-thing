@@ -56,9 +56,7 @@ void DynamicObject::physicsUpdate(double time)
 int DynamicObject::addForce(glm::vec2 F, ForceType type)
 {
 	if (type == Impulse) {
-		std::cout << "before speed = " << linearSpeed.x << "  " << linearSpeed.y << std::endl;
 		linearSpeed.x += F.x;linearSpeed.y += F.y;
-		std::cout << "after speed = " << linearSpeed.x << "  " << linearSpeed.y << std::endl;
 	}
 	else if (type == Continuous || type == Walk) {
 		//pick an index

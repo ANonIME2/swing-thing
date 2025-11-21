@@ -7,6 +7,10 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
+#include <assert.h>
+#include <cmath>
+#include <string>
+//#include <algorithm>
 
 
 

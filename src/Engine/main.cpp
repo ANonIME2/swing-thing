@@ -11,7 +11,7 @@
 
 unsigned int WINDOW_WIDTH = 1200, WINDOW_HEIGHT = 800;
 Player player(-30.2f, 0.0f, 40.0f, 60.0f, 0.01f, 0.0f, 0.001f);
-DynamicObject otherObject(30.0f, -30.0f, 80.0f, 60.0f, 0.01f, 0.0f, 0.0f);
+DynamicObject otherObject(0.0f, -30.0f, 80.0f, 60.0f, 0.01f, 0.0f, 0.0f);
 //unsigned int VBO;
 //unsigned int VAO;
 //unsigned int EBO;
@@ -36,10 +36,6 @@ void processInput(GLFWwindow* window) {
 		if (!player.jumpedLastFrame) {
 			player.jump();
 			player.jumpedLastFrame = true;
-			for (int i = 0; i < sizeof(player.vertices) / sizeof(float); i++) {
-				std::cout << player.vertices[i] << " ";
-			}
-			std::cout << std::endl;
 		}
 	}
 	else {
@@ -219,6 +215,10 @@ int main() {
 		last_frame = now;
 		player.physicsUpdate(1);
 		otherObject.physicsUpdate(1);
+		if (player.colides(&otherObject)) {
+			std::cout << "yes" << std::endl;
+		}
+
 		//rendering commands here
 		glClear(GL_COLOR_BUFFER_BIT);
 		player.render();

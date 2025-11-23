@@ -48,17 +48,20 @@ bool PhysicsObject::intersects(glm::vec2 A, glm::vec2 B, glm::vec2 C, glm::vec2 
     for (int i = 0; i < sizeof(arr) / sizeof(glm::vec2); i++) {
         assert(isfinite(arr[i]->x) && isfinite(arr[i]->y) && "All the points' coordinates must not be nan, or inf)");
     }
-
+    /*A += glm::vec2(0.01f, 0.01f);
+    B += glm::vec2(0.01f, 0.01f);
+    C += glm::vec2(0.01f, 0.01f);
+    D += glm::vec2(0.01f, 0.01f);*/
 
     float x1 = A.x, x2 = B.x, x3 = C.x, x4 = D.x, y1 = A.y, y2 = B.y, y3 = C.y, y4 = D.y;
     float uA = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
     float uB = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
     //std::cout << A.x << " " << A.y << " " << B.x << " " << B.y << " " << C.x << " " << C.y << " " << D.x << " " << D.y << " " << std::endl;
     if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
+    std::cout << uA << " " << uB << std::endl;
         
         return true;
     }
-    printf("%d %d \n", uA, uB);
     return false;
 }
 

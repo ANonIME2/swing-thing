@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <cmath>
 #include <string>
+#include <stdio.h>
 //#include <algorithm>
 
 

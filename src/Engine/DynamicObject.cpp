@@ -3,14 +3,13 @@
 #include "Force.h"
 
 
-DynamicObject::DynamicObject(float x, float y, float width, float height, float linearDamping, float angularDamping, float gravity) {
+DynamicObject::DynamicObject(float x, float y, float width, float height, float linearDamping, float angularDamping, float gravity)
+	: linearDamping(linearDamping), angularDamping(angularDamping), gravity(gravity)
+{
 	pos = { x, y };
 	size = glm::vec2(width, height);
 	linearSpeed = glm::vec2(0.0f, 0.0f);
 	acceleration = glm::vec2(0.0f, 0.0f);
-	this->linearDamping = linearDamping;
-	this->angularDamping = angularDamping;
-	this->gravity = gravity;
 	for (int i = 2; i < 12; i += 3) {
 		vertices[i] = 0.0f;
 	}
@@ -25,7 +24,8 @@ DynamicObject::DynamicObject(float x, float y, float width, float height, float 
 }
 
 
-//updates all physics related things. speed, acceleration, position. handles Continuous forces
+//updates all physics related things. speed, acceleration, position. handles Continuous forces. time means how many frames long was the lasts frame.
+// if the game runs in 60 fps and the frame lasted 2/60 sec, time=2
 void DynamicObject::physicsUpdate(double time)
 {
 	glm::vec2 time_v = { time, time };
@@ -36,6 +36,7 @@ void DynamicObject::physicsUpdate(double time)
 
 	linearSpeed += acceleration * time_v;
 
+	//linear damping
 	linearSpeed += -linearSpeed * glm::length(linearSpeed) * linearDamping * time_v;
 	pos += linearSpeed;
 	vertices[0] = pos.x;

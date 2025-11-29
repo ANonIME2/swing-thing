@@ -1,14 +1,7 @@
 #pragma once
 #include <glm.hpp>
 #include <glad/glad.h>
-//#include <utility>
-//#include <map>
-//#include <iostream>
-//#include <vector>
-//#include <assert.h>
-//#include <cmath>
-//#include <string>
-//#include <stdio.h>
+
 
 
 class WorldObject

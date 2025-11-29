@@ -28,7 +28,6 @@ DynamicObject::DynamicObject(float x, float y, float width, float height, float 
 //updates all physics related things. speed, acceleration, position. handles Continuous forces
 void DynamicObject::physicsUpdate(double time)
 {
-	
 	glm::vec2 time_v = { time, time };
 	linearSpeed.y -= gravity * time;
 	for (int i = 0; i < Forces.size(); i++) {

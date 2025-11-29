@@ -1,7 +1,10 @@
 #pragma once
-#include <vector>
 #include "PhysicsObject.h"
-#include "Force.h"
+#include <vector>
+#include <map>
+class Force;
+enum ForceType;
+
 
 class DynamicObject : public PhysicsObject
 {

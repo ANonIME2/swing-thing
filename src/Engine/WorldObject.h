@@ -1,18 +1,14 @@
 #pragma once
-#include <utility>
-#include <glm.hpp>
-#include <map>
 #include <glm.hpp>
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <iostream>
-#include <vector>
-#include <assert.h>
-#include <cmath>
-#include <string>
-#include <stdio.h>
-//#include <algorithm>
-
+//#include <utility>
+//#include <map>
+//#include <iostream>
+//#include <vector>
+//#include <assert.h>
+//#include <cmath>
+//#include <string>
+//#include <stdio.h>
 
 
 class WorldObject

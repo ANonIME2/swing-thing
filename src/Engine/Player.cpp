@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Force.h"
 #include <iostream>
 void Player::jump()
 {

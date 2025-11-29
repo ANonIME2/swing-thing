@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <cstdlib>
 #include "Engine.h"
-#include <chrono>
 #include <thread>
 #include <iostream>
 
@@ -11,8 +10,9 @@
 
 unsigned int WINDOW_WIDTH = 1200, WINDOW_HEIGHT = 800;
 unsigned int FRAMERATE_GOAL = 120;
-Player player(-30.2f, 0.0f, 40.0f, 60.0f, 0.01f, 0.0f, 0.3f);
-DynamicObject otherObject(0.0f, -30.0f, 80.0f, 60.0f, 0.01f, 0.0f, 0.0f);
+Level level(FRAMERATE_GOAL);
+Player player(&level, -30.2f, 0.0f, 40.0f, 60.0f, 0.01f, 0.0f, 0.3f);
+DynamicObject otherObject(&level, 0.0f, -30.0f, 80.0f, 60.0f, 0.01f, 0.0f, 0.0f);
 //unsigned int VBO;
 //unsigned int VAO;
 //unsigned int EBO;
@@ -203,32 +203,18 @@ int main() {
 	otherObject.setUpAVO();
 
 	glClearColor(40.0f / 255, 40.0f / 255, 40.0f / 255, 1.0f);
-	//finally, we can create the render loop
-	auto last_frame = std::chrono::high_resolution_clock::now();
+	//render loop
 	while (!glfwWindowShouldClose(window)) {
-
 		//input
 		processInput(window);
 
 		//physycs updates
-		auto now = std::chrono::high_resolution_clock::now();
-		double deltaTime = std::chrono::duration<double>(now - last_frame).count();
-		last_frame = now;
-		if (1.0 / FRAMERATE_GOAL > deltaTime) {
-			std::this_thread::sleep_for(std::chrono::nanoseconds((int)(1000000000 / FRAMERATE_GOAL - deltaTime*1000000000)));
-		}
-		player.physicsUpdate(1);
-		otherObject.physicsUpdate(1);
-		if (player.colides(&otherObject)) {
-			std::cout << "macaja sie" << std::endl;
-		}
+		level.physicsUpdate();
 
 
 		//rendering commands here
 		glClear(GL_COLOR_BUFFER_BIT);
-		player.render();
-		otherObject.render();
-
+		level.render();
 		
 		
 		//check and call events and swap the buffers

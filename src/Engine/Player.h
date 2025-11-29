@@ -1,10 +1,12 @@
 #pragma once
 #include "DynamicObject.h"
-
+class Level;
 class Player : public DynamicObject
 {
 public:
+
 	Player(
+		Level* level,
 		float x = 0.0f,
 		float y = 0.0f,
 		float width = 10.0f,

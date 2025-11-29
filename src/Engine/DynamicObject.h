@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 class Force;
+class Level;
 enum ForceType;
 
 
@@ -10,7 +11,8 @@ class DynamicObject : public PhysicsObject
 {
 public:
 	DynamicObject(float x = 0.0f, float y = 0.0f, float width = 10.0f, float height = 10.0f, float linearDamping = 0, float angularDamping = 0, float gravity = 0);
-	void physicsUpdate(double time);
+	DynamicObject(Level* level, float x = 0.0f, float y = 0.0f, float width = 10.0f, float height = 10.0f, float linearDamping = 0, float angularDamping = 0, float gravity = 0);
+	void physicsUpdate(double time = 1.0);
 	int addForce(glm::vec2 F, ForceType type);
 	int addForce(Force F);
 	bool removeForce(int id);

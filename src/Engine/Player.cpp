@@ -1,7 +1,8 @@
 #include "Player.h"
 #include "Force.h"
+#include "Level.h"
 #include <iostream>
-Player::Player(float x, float y, float width, float height, float linearDamping, float angularDamping, float gravity, float jumpForce)
+Player::Player(Level* level, float x, float y, float width, float height, float linearDamping, float angularDamping, float gravity, float jumpForce)
 	: jumpForce(jumpForce)
 {
 	pos = { x, y };
@@ -14,6 +15,7 @@ Player::Player(float x, float y, float width, float height, float linearDamping,
 	for (int i = 2; i < 12; i += 3) {
 		vertices[i] = 0.0f;
 	}
+	level->addObject(this);
 	vertices[0] = pos.x;
 	vertices[1] = pos.y;
 	vertices[3] = pos.x;

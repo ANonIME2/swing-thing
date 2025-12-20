@@ -6,45 +6,21 @@
 
 
 DynamicObject::DynamicObject(float x, float y, float width, float height, float linearDamping, float angularDamping, float gravity)
-	: linearDamping(linearDamping), angularDamping(angularDamping), gravity(gravity)
+	: PhysicsObject(x, y, width, height), 
+	linearDamping(linearDamping), 
+	angularDamping(angularDamping),
+	gravity(gravity)
 {
-	pos = { x, y };
-	size = glm::vec2(width, height);
 	linearSpeed = glm::vec2(0.0f, 0.0f);
 	acceleration = glm::vec2(0.0f, 0.0f);
-	for (int i = 2; i < 12; i += 3) {
-		vertices[i] = 0.0f;
-	}
-	vertices[0] = pos.x;
-	vertices[1] = pos.y;
-	vertices[3] = pos.x;
-	vertices[4] = pos.y + height;
-	vertices[6] = pos.x + width;
-	vertices[7] = pos.y + height;
-	vertices[9] = pos.x + width;
-	vertices[10] = pos.y;
+
 
 }
 
-DynamicObject::DynamicObject(Level* level, float x, float y, float width, float height, float linearDamping, float angularDamping, float gravity)
-	: linearDamping(linearDamping), angularDamping(angularDamping), gravity(gravity)
+DynamicObject::DynamicObject(Level* level, float x, float y, float width, float height, float linearDamping, float angularDamping, float gravity):
+	DynamicObject(x, y, width, height, linearDamping, angularDamping, gravity)
 {
-	pos = { x, y };
-	size = glm::vec2(width, height);
-	linearSpeed = glm::vec2(0.0f, 0.0f);
-	acceleration = glm::vec2(0.0f, 0.0f);
 	level->addObject(this);
-	for (int i = 2; i < 12; i += 3) {
-		vertices[i] = 0.0f;
-	}
-	vertices[0] = pos.x;
-	vertices[1] = pos.y;
-	vertices[3] = pos.x;
-	vertices[4] = pos.y + height;
-	vertices[6] = pos.x + width;
-	vertices[7] = pos.y + height;
-	vertices[9] = pos.x + width;
-	vertices[10] = pos.y;
 }
 
 
@@ -64,14 +40,7 @@ void DynamicObject::physicsUpdate(double time)
 	//linear damping
 	linearSpeed += -linearSpeed * glm::length(linearSpeed) * linearDamping * time_v;
 	pos += linearSpeed;
-	vertices[0] = pos.x;
-	vertices[1] = pos.y;
-	vertices[3] = pos.x;
-	vertices[4] = pos.y + size.y;
-	vertices[6] = pos.x + size.x;
-	vertices[7] = pos.y + size.y;
-	vertices[9] = pos.x + size.x;
-	vertices[10] = pos.y;
+
 
 }
 
@@ -134,12 +103,26 @@ bool DynamicObject::removeForce(int id)
 	}
 }
 
+//checks if two PhysicsObjects' hitboxes are coliding
 bool DynamicObject::colides(PhysicsObject* B)
 {
-	//checks if two PhysicsObjects' hitboxes are coliding
-	auto A = this;
-	int aSize = A->hitbox.size();
-	int bSize = B->hitbox.size();
+	std::vector<glm::vec2> 
+		hitboxVectorsA = *(this->hitbox),
+		hitboxVectorsB = *(B->hitbox),
+		hitboxA(this->hitbox->size()),
+		hitboxB(B->hitbox->size());
+
+	for (int i = 0; i < hitboxVectorsA.size(); i++) {
+		hitboxA[i] = glm::vec2(this->pos.x + hitboxVectorsA[i].x, this->pos.y + hitboxVectorsA[i].y);
+	}
+	for (int i = 0; i < hitboxVectorsB.size(); i++) {
+		hitboxB[i] = glm::vec2(B->pos.x + hitboxVectorsB[i].x, B->pos.y + hitboxVectorsB[i].y);
+	}
+
+
+
+	int aSize = hitboxA.size();
+	int bSize = hitboxB.size();
 	if (aSize == 0 || bSize == 0) {
 		return false;
 	}
@@ -147,21 +130,21 @@ bool DynamicObject::colides(PhysicsObject* B)
 
 	for (int i = 0; i < aSize - 1; i++) {
 		for (int j = 0; j < bSize - 1; j++) {
-			if (intersects(A->hitbox[i], A->hitbox[i + 1], B->hitbox[j], B->hitbox[j + 1])) {
+			if (intersects(hitboxA[i], hitboxA[i + 1], hitboxB[j], hitboxB[j + 1])) {
 				return true;
 			}
 		}
-		if (intersects(A->hitbox[i], A->hitbox[i + 1], B->hitbox[0], B->hitbox[bSize - 1])) {
+		if (intersects(hitboxA[i], hitboxA[i + 1], hitboxB[0], hitboxB[bSize - 1])) {
 			return true;
 		}
 	}
 
 	for (int i = 0; i < bSize - 1; i++) {
-		if (intersects(A->hitbox[aSize - 1], A->hitbox[0], B->hitbox[i], B->hitbox[i + 1])) {
+		if (intersects(hitboxA[aSize - 1], hitboxA[0], hitboxB[i], hitboxB[i + 1])) {
 			return true;
 		}
 	}
-	return intersects(A->hitbox[aSize - 1], A->hitbox[0], B->hitbox[bSize - 1], B->hitbox[0]);
+	return intersects(hitboxA[aSize - 1], hitboxA[0], hitboxB[bSize - 1], hitboxB[0]);
 }
 
 bool DynamicObject::intersects(glm::vec2 A, glm::vec2 B, glm::vec2 C, glm::vec2 D) {

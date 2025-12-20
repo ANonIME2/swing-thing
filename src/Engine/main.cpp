@@ -37,6 +37,12 @@ void processInput(GLFWwindow* window) {
 		if (!player.jumpedLastFrame) {
 			player.jump();
 			player.jumpedLastFrame = true;
+
+			// DEBUG
+			for (int i = 0; i < player.hitbox->size(); i++) {
+				std::cout << (*player.hitbox)[i].x << " "<< (*player.hitbox)[i].y<<" ";
+			}
+			std::cout << std::endl;
 		}
 	}
 	else {
@@ -128,7 +134,7 @@ auto setUpShaderProgram() {
 
 //void drawPlayer() {
 //	glBindVertexArray(VAO);
-//	glBufferData(GL_ARRAY_BUFFER, sizeof(player.vertices), player.vertices, GL_STREAM_DRAW);
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(player.verticesVectors), player.verticesVectors, GL_STREAM_DRAW);
 //	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);//if we didn't have an EBO, this would be glDrawarrays()
 //	glBindVertexArray(0);
 //
@@ -144,7 +150,7 @@ auto setUpShaderProgram() {
 //	//binding VAO, VBO, EBO
 //	glBindVertexArray(VAO);
 //	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//	glBufferData(GL_ARRAY_BUFFER, sizeof(player.vertices), player.vertices, GL_STREAM_DRAW);
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(player.verticesVectors), player.verticesVectors, GL_STREAM_DRAW);
 //	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(player.indices), player.indices, GL_STREAM_DRAW);
 //

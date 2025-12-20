@@ -1,19 +1,22 @@
 #include "WorldObject.h"
+#include <glm.hpp>
+#include <glad/glad.h>
+#include <iostream>
+
 
 WorldObject::WorldObject(float x, float y, float width, float height) {
 	pos = { x, y };
 	size = { width, height };
-	for (int i = 2; i < 12; i += 3) {
-		vertices[i] = 0.0f;
-	}
-	vertices[0] = pos.x;
-	vertices[1] = pos.y;
-	vertices[3] = pos.x;
-	vertices[4] = pos.y + height;
-	vertices[6] = pos.x + width;
-	vertices[7] = pos.y + height;
-	vertices[9] = pos.x + width;
-	vertices[10] = pos.y;
+
+	//FIXME replace the magic number in "verticesVectors.resize(4)" here with something less retarded.
+	// it's here only because right now (december 2025) i only have rectangular worldObjects.
+	// when we move on to polygons, I'm gonna need to change this
+	verticesVectors.resize(4); 
+	verticesVectors[0] = glm::vec2(0.0f, 0.0f);
+	verticesVectors[1] = glm::vec2(0.0f, height);
+	verticesVectors[2] = glm::vec2(width, height);
+	verticesVectors[3] = glm::vec2(width, 0.0f);
+
 	VBO = 0;
 	VAO = 0;
 	EBO = 0;
@@ -25,11 +28,20 @@ WorldObject::WorldObject(float x, float y, float width, float height) {
 	//indices[5] = 3;
 }
 
+
 void WorldObject::render()
 {
+	// i'm pretty sure i'm gonna need to change this and remove the magic number in "float dataArray[12]".
+	// right now i don't know how would i do that though.
+	float verticesArray[12];
+	for (int i = 0; i < verticesVectors.size(); i++) {
+		verticesArray[i * 3] = this->verticesVectors[i].x + this->pos.x;
+		verticesArray[i * 3 + 1] = this->verticesVectors[i].y + this->pos.y;
+		verticesArray[i * 3 + 2] = 0.0f;
+	}
 	glBindVertexArray(this->VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(this->vertices), this->vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(verticesArray), verticesArray, GL_STATIC_DRAW);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);//if we didn't have an EBO, this would be glDrawarrays()
 	glBindVertexArray(0);
 	GLint vbo = 0;
@@ -49,7 +61,12 @@ void WorldObject::render()
 }
 
 void WorldObject::setUpAVO() {
-
+	float verticesArray[12];
+	for (int i = 0; i < verticesVectors.size(); i++) {
+		verticesArray[i * 3] = this->verticesVectors[i].x + this->pos.x;
+		verticesArray[i * 3 + 1] = this->verticesVectors[i].y + this->pos.y;
+		verticesArray[i * 3 + 2] = 0.0f;
+	}
 	glGenVertexArrays(1, &this->VAO);
 	glGenBuffers(1, &this->VBO);
 	glGenBuffers(1, &this->EBO);
@@ -59,7 +76,7 @@ void WorldObject::setUpAVO() {
 
 	// Allocate space to receive the data
 	glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(this->vertices), this->vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(verticesArray), verticesArray, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(this->indices), this->indices, GL_STATIC_DRAW);
 	//set our vertex attributes pointers. essentially, telling opengl how our vertex data is formated

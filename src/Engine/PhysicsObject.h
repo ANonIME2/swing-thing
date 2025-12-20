@@ -1,13 +1,12 @@
 #pragma once
 #include "WorldObject.h"
 #include <vector>
-#include <utility>
 
 class PhysicsObject : public WorldObject
 {
 public:
-	PhysicsObject(std::vector<glm::vec2> h = std::vector<glm::vec2>(0));
-	std::vector<std::pair<float*, float*>> hitbox;
+	PhysicsObject(float x = 0.0f, float y = 0.0f, float width = 10.0f, float height = 10.0f);
+	std::vector<glm::vec2>* hitbox;
 
 };
 

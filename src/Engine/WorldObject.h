@@ -1,7 +1,6 @@
 #pragma once
 #include <glm.hpp>
-#include <glad/glad.h>
-
+#include <vector>
 
 
 class WorldObject
@@ -10,7 +9,7 @@ public:
 	WorldObject(float x = 0.0f, float y = 0.0f, float width = 10.0f, float height = 10.0f);
 	void render();
 	void setUpAVO();
-	float vertices[12] = {};
+	std::vector<glm::vec2> verticesVectors;  //holds vectors that point from (pos.x, pos.y) to each vertex
 	int indices[6] = {
 		0, 1, 3,
 		1, 2, 3

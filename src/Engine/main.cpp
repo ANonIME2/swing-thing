@@ -70,7 +70,7 @@ auto setUpShaderProgram() {
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	glCompileShader(vertexShader);
-
+	
 
 	int success;
 	char infoLog[512];

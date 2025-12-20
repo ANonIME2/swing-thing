@@ -13,7 +13,7 @@ void Level::addObject(DynamicObject* object)
 	this->physicsObjects.push_back(object);
 }
 
-void Level::physicsUpdate()
+void Level::physicsUpdate(double time)
 {
 	for (auto i : this->physicsObjects) {
 		std::vector<DynamicObject*> noIPhysicsObjects = this->physicsObjects;//this->physicsObjects, but without the i elemetn
@@ -23,7 +23,7 @@ void Level::physicsUpdate()
 			}
 		}
 
-		i->physicsUpdate(noIPhysicsObjects);
+		i->physicsUpdate(noIPhysicsObjects, time);
 	}
 }
 

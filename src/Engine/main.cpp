@@ -217,6 +217,7 @@ int main() {
 		level.render();
 		
 		
+		
 		//check and call events and swap the buffers
 		glfwPollEvents();
 		glfwSwapBuffers(window);

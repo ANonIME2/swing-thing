@@ -1,6 +1,6 @@
 #include "Level.h"
 #include "WorldObject.h"
-#include "DynamicObject.h"
+#include "PhysicsObject.h"
 #include <chrono>
 #include <thread>
 Level::Level(unsigned int framerate_goal): FRAMERATE_GOAL(framerate_goal)
@@ -8,7 +8,7 @@ Level::Level(unsigned int framerate_goal): FRAMERATE_GOAL(framerate_goal)
 
 }
 
-void Level::addObject(DynamicObject* object)
+void Level::addObject(PhysicsObject* object)
 {
 	this->physicsObjects.push_back(object);
 }
@@ -16,7 +16,8 @@ void Level::addObject(DynamicObject* object)
 void Level::physicsUpdate(double time)
 {
 	for (auto i : this->physicsObjects) {
-		std::vector<DynamicObject*> noIPhysicsObjects = this->physicsObjects;//this->physicsObjects, but without the i elemetn
+		
+		std::vector<PhysicsObject*> noIPhysicsObjects = this->physicsObjects;//this->physicsObjects, but without the i element
 		for (int j = 0; j < noIPhysicsObjects.size(); j++) {
 			if (noIPhysicsObjects[j] == i) {
 				noIPhysicsObjects.erase(noIPhysicsObjects.begin() + j);

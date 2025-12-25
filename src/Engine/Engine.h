@@ -2,7 +2,6 @@
 
 #include "WorldObject.h"
 #include "PhysicsObject.h"
-#include "DynamicObject.h"
 #include "Player.h"
 #include "Force.h"
 #include "Level.h"

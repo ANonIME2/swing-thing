@@ -5,14 +5,15 @@
 #include "Engine.h"
 #include <thread>
 #include <iostream>
+#include <typeinfo>
 
 
 
 unsigned int WINDOW_WIDTH = 1200, WINDOW_HEIGHT = 800;
 unsigned int FRAMERATE_GOAL = 120;
 Level level(FRAMERATE_GOAL);
-Player player(&level, -30.2f, 0.0f, 40.0f, 60.0f, 0.01f, 0.0f, 0.3f);
-DynamicObject otherObject(&level, 0.0f, -30.0f, 80.0f, 60.0f, 0.01f, 0.0f, 0.0f);
+Player player(&level, Dynamic, -30.2f, 0.0f, 40.0f, 60.0f, 1.0f, 0.01f, 0.0f, 0.2f, 50.0f);
+PhysicsObject otherObject(&level, Static, 0.0f, -30.0f, 80.0f, 60.0f);
 //unsigned int VBO;
 //unsigned int VAO;
 //unsigned int EBO;
@@ -37,13 +38,9 @@ void processInput(GLFWwindow* window) {
 		if (!player.jumpedLastFrame) {
 			player.jump();
 			player.jumpedLastFrame = true;
-
-			// DEBUG
-			for (int i = 0; i < player.hitbox->size(); i++) {
-				std::cout << (*player.hitbox)[i].x << " "<< (*player.hitbox)[i].y<<" ";
-			}
-			std::cout << std::endl;
+			std::cout << player.physicsType << std::endl;
 		}
+	
 	}
 	else {
 		player.jumpedLastFrame = false;

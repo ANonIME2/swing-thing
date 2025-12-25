@@ -1,16 +1,18 @@
 #pragma once
-#include "DynamicObject.h"
+#include "PhysicsObject.h"
 class Level;
-class Player : public DynamicObject
+class Player : public PhysicsObject
 {
 public:
 
 	Player(
 		Level* level,
+		PhysicsObjectType physicsType,
 		float x = 0.0f,
 		float y = 0.0f,
 		float width = 10.0f,
 		float height = 10.0f,
+		float mass = 1.0f,
 		float linearDamping = 0.0f,
 		float angularDamping = 0.0f,
 		float gravity = 0.0f,

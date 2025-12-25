@@ -2,8 +2,8 @@
 #include "Force.h"
 #include "Level.h"
 #include <iostream>
-Player::Player(Level* level, float x, float y, float width, float height, float linearDamping, float angularDamping, float gravity, float jumpForce)
-	: DynamicObject(level, x, y, width, height, linearDamping, angularDamping, gravity)
+Player::Player(Level* level, PhysicsObjectType physicsType, float x, float y, float width, float height, float mass, float linearDamping, float angularDamping, float gravity, float jumpForce)
+	: PhysicsObject(level, physicsType, x, y, width, height, mass, linearDamping, angularDamping, gravity)
 {
 	this->jumpForce = jumpForce;
 }

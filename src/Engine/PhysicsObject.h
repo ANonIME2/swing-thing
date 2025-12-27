@@ -24,7 +24,8 @@ public:
 	int addForce(glm::vec2 F, ForceType type);
 	int addForce(Force F);
 	bool removeForce(int id);
-	bool colides(PhysicsObject* B);
+	std::pair<int, int> colides(PhysicsObject* B);
+
 
 	glm::vec2 linearSpeed, acceleration;
 	std::map<int, Force> Forces;

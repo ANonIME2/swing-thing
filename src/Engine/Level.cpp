@@ -16,15 +16,9 @@ void Level::addObject(PhysicsObject* object)
 void Level::physicsUpdate(double time)
 {
 	for (auto i : this->physicsObjects) {
-		
-		std::vector<PhysicsObject*> noIPhysicsObjects = this->physicsObjects;//this->physicsObjects, but without the i element
-		for (int j = 0; j < noIPhysicsObjects.size(); j++) {
-			if (noIPhysicsObjects[j] == i) {
-				noIPhysicsObjects.erase(noIPhysicsObjects.begin() + j);
-			}
+		if (i->physicsType == Dynamic) {
+			i->physicsUpdate(this->physicsObjects, time);
 		}
-
-		i->physicsUpdate(noIPhysicsObjects, time);
 	}
 }
 

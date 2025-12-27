@@ -38,9 +38,7 @@ void processInput(GLFWwindow* window) {
 		if (!player.jumpedLastFrame) {
 			player.jump();
 			player.jumpedLastFrame = true;
-			std::cout << player.physicsType << std::endl;
 		}
-	
 	}
 	else {
 		player.jumpedLastFrame = false;

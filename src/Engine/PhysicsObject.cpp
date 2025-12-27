@@ -4,7 +4,7 @@
 #include "Level.h"
 #include "Force.h"
 #include <vector>
-
+#include <algorithm>
 
 
 
@@ -67,11 +67,34 @@ void PhysicsObject::physicsUpdate(double time)
 
 void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, double time)
 {
+	// regular position updates
 	this->physicsUpdate(time);
+
+	// collision detection
 	for (auto i : physicsObjects) {
-		if (this->colides(i)) {
-			//TODO handle the collision 
-			;
+		std::pair<int, int> colidingEdges = this->colides(i);
+		if (colidingEdges.first != -1) {
+			if (i->physicsType == Static) {
+				//find which vertex is inside the other object
+				std::vector<glm::vec2> hitboxA = *(this->hitbox);
+				std::vector<glm::vec2> hitboxB = *(i->hitbox);
+				glm::vec2 A = hitboxA[colidingEdges.first];
+				glm::vec2 B = hitboxA[(colidingEdges.first+1)%hitboxA.size()];
+				glm::vec2 C = hitboxB[colidingEdges.second];
+				glm::vec2 D = hitboxB[(colidingEdges.second+1)%hitboxB.size()];
+				glm::vec2 CD = D - C;
+				//delta is the vector from the vertex inside this and the vertex inside the other object
+				glm::vec2 delta = this->pos + B - i->pos - C;
+				float cross = CD.x * delta.y - CD.y * delta.x;
+				if (cross > 0) {
+					std::swap(A, B);
+				}
+
+				//snap this object back to where they don't collide
+				glm::vec2 n = -glm::normalize(this->linearSpeed);
+				float scalar = std::min(abs(delta.x / n.x), abs(delta.y / n.y));
+				this->pos += n * scalar;
+			}
 		}
 	}
 }
@@ -124,60 +147,52 @@ bool PhysicsObject::removeForce(int id)
 	}
 }
 
-//checks if two PhysicsObjects' hitboxes are coliding
-bool PhysicsObject::colides(PhysicsObject* B)
+// checks if two PhysicsObjects' hitboxes are coliding.
+// if they are, returns the indexes of the edges that are intersecting.
+// else, return std::make_pair(-1, -1)
+std::pair<int, int>  PhysicsObject::colides(PhysicsObject* B)
 {
+	// check if it's not the same object
+	if (B == this) {
+		return std::make_pair(-1, -1);
+	}
+
 	std::vector<glm::vec2>
 		hitboxVectorsA = *(this->hitbox),
 		hitboxVectorsB = *(B->hitbox),
-		hitboxA(this->hitbox->size()),
-		hitboxB(B->hitbox->size());
+		hitboxA(this->hitbox->size()+1),
+		hitboxB(B->hitbox->size()+1);
+
+	int aSize = hitboxA.size();
+	int bSize = hitboxB.size();
+	if (hitboxVectorsA.size() == 0 || hitboxVectorsB.size() == 0) {
+		return std::make_pair(-1, -1);
+	}
 
 	for (int i = 0; i < hitboxVectorsA.size(); i++) {
 		hitboxA[i] = glm::vec2(this->pos.x + hitboxVectorsA[i].x, this->pos.y + hitboxVectorsA[i].y);
 	}
+	hitboxA[hitboxA.size() - 1] = hitboxA[0];
+
 	for (int i = 0; i < hitboxVectorsB.size(); i++) {
 		hitboxB[i] = glm::vec2(B->pos.x + hitboxVectorsB[i].x, B->pos.y + hitboxVectorsB[i].y);
 	}
+	hitboxB[hitboxB.size() - 1] = hitboxB[0];
 
 
 
-	int aSize = hitboxA.size();
-	int bSize = hitboxB.size();
-	if (aSize == 0 || bSize == 0) {
-		return false;
-	}
 
-	
-	/*std::cout << this->pos.x << " " << this->pos.y<<std::endl;
-	std::cout << B->pos.x << " " << B->pos.y<<std::endl;
-
-	for (int i = 0; i < aSize; i++) {
-		std::cout << "(" << hitboxVectorsA[i].x << ", " << hitboxVectorsA[i].y << ")"<<std::endl;
-	}
-	for (int i = 0; i < bSize; i++) {
-		std::cout << "(" << hitboxB[i].x << ", " << hitboxB[i].y << ")"<<std::endl;
-	}*/
-
-
-	//FIXME pls it's so sad what i have done here. just add the first vertex of hitbox to the end and all of this shite can go away
-	for (int i = 0; i < aSize - 1; i++) {
-		for (int j = 0; j < bSize - 1; j++) {
+	// check if any of the edges intersect
+	for (int i = 0; i < aSize-1; i++) {
+		for (int j = 0; j < bSize-1; j++) {
 			if (intersects(hitboxA[i], hitboxA[i + 1], hitboxB[j], hitboxB[j + 1])) {
-				return true;
+				return std::make_pair(i, j);
 			}
 		}
-		if (intersects(hitboxA[i], hitboxA[i + 1], hitboxB[0], hitboxB[bSize - 1])) {
-			return true;
-		}
 	}
 
-	for (int j = 0; j < bSize - 1; j++) {
-		if (intersects(hitboxA[aSize - 1], hitboxA[0], hitboxB[j], hitboxB[j + 1])) {
-			return true;
-		}
-	}
-	return intersects(hitboxA[aSize - 1], hitboxA[0], hitboxB[bSize - 1], hitboxB[0]);
+
+	return std::make_pair(-1, -1);
 }
 
 bool PhysicsObject::intersects(glm::vec2 A, glm::vec2 B, glm::vec2 C, glm::vec2 D) {

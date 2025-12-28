@@ -2,10 +2,11 @@
 #include "Force.h"
 #include "Level.h"
 #include <iostream>
-Player::Player(Level* level, PhysicsObjectType physicsType, float x, float y, float width, float height, float mass, float linearDamping, float angularDamping, float gravity, float jumpForce)
+Player::Player(Level* level, PhysicsObjectType physicsType, float x, float y, float width, float height, float mass, float linearDamping, float angularDamping, float gravity, float jumpForce, float walkSpeed)
 	: PhysicsObject(level, physicsType, x, y, width, height, mass, linearDamping, angularDamping, gravity)
 {
 	this->jumpForce = jumpForce;
+	this->walkSpeed = walkSpeed;
 }
 void Player::jump()
 {
@@ -14,7 +15,7 @@ void Player::jump()
 
 void Player::walk(glm::vec2 direction)
 {
-	this->addForce(direction * this->walkSpeed, Walk);
+	this->pos += direction * this->walkSpeed;
 }
 
 void Player::walkRight()

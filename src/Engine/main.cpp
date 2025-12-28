@@ -35,14 +35,23 @@ void processInput(GLFWwindow* window) {
 		
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		if (!player.jumpedLastFrame) {
+		if (!player.canJump) {
 			player.jump();
-			player.jumpedLastFrame = true;
+			player.canJump = true;
 		}
 	}
 	else {
-		player.jumpedLastFrame = false;
+		player.canJump = false;
 	}
+	
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		player.walkLeft();
+	}
+	
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		player.walkRight();
+	}
+
 	
 }
 

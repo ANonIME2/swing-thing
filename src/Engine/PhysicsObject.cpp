@@ -54,7 +54,12 @@ void PhysicsObject::physicsUpdate(double time)
 	linearSpeed.y -= gravity * time;
 	for (auto i: this->Forces) {
 		//TODO start using kinetic energy instead of adding just raw speed
-		linearSpeed += i.force * time_v;
+		if (i.type == Continuous) {
+			linearSpeed += i.force * time_v;
+		}
+		else {
+			this->pos += i.force;
+		}
 	}
 
 	linearSpeed += acceleration * time_v;

@@ -16,13 +16,15 @@ public:
 		float linearDamping = 0.0f,
 		float angularDamping = 0.0f,
 		float gravity = 0.0f,
-		float jumpForce = 50.0f);
+		float jumpForce = 50.0f,
+		float walkSpeed = 1.0f
+	);
 
 	void jump();
-	bool jumpedLastFrame = false;
-	float jumpForce, walkSpeed;
 	void walk(glm::vec2 direction);
 	void walkRight();
 	void walkLeft();
+	bool canJump = false;
+	float jumpForce, walkSpeed;
 
 };

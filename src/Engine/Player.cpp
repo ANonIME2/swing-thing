@@ -11,3 +11,19 @@ void Player::jump()
 {
 	addForce(glm::vec2(0.0f, this->jumpForce), Impulse);
 }
+
+void Player::walk(glm::vec2 direction)
+{
+	this->addForce(direction * this->walkSpeed, Walk);
+}
+
+void Player::walkRight()
+{
+	walk(glm::vec2(1, 0));
+}
+
+void Player::walkLeft()
+{
+	walk(glm::vec2(-1, 0));
+}
+

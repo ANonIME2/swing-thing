@@ -20,5 +20,9 @@ public:
 
 	void jump();
 	bool jumpedLastFrame = false;
-	float jumpForce;
+	float jumpForce, walkSpeed;
+	void walk(glm::vec2 direction);
+	void walkRight();
+	void walkLeft();
+
 };

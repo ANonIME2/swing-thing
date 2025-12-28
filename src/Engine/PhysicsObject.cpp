@@ -45,14 +45,16 @@ PhysicsObject::PhysicsObject(Level* level, PhysicsObjectType physicsType, float 
 // if the game runs in 60 fps and the frame lasted 2/60 sec, time=2
 void PhysicsObject::physicsUpdate(double time)
 {
+	assert(isfinite(this->pos.x) && isfinite(this->pos.y) && "position must be finite");
 	if (this->physicsType == Static) {
 		return;
 	}
 	//std::cout << "pos = (" << this->pos.x << ", " << this->pos.y << ")" << std::endl;
 	glm::vec2 time_v = { time, time };
 	linearSpeed.y -= gravity * time;
-	for (int i = 0; i < Forces.size(); i++) {
-		linearSpeed += Forces[i].force * time_v;
+	for (auto i: this->Forces) {
+		//TODO start using kinetic energy instead of adding just raw speed
+		linearSpeed += i.force * time_v;
 	}
 
 	linearSpeed += acceleration * time_v;
@@ -61,7 +63,7 @@ void PhysicsObject::physicsUpdate(double time)
 	linearSpeed += -linearSpeed * glm::length(linearSpeed) * linearDamping * time_v;
 	pos += linearSpeed;
 	//std::cout << "pos = (" << this->pos.x << ", " << this->pos.y << ")" << std::endl;
-	assert(isfinite(this->pos.x) && isfinite(this->pos.y) && "position can't be nan or inf");
+	assert(isfinite(this->pos.x) && isfinite(this->pos.y) && "position must be finite");
 
 }
 
@@ -102,49 +104,34 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 
 
 // adds a force.
-// if mode = IMPULSE: applies it once. returns -1;
-// if mode = Continuous: pushes it to a list of forces that gets applied every physicsUpdate(). returns the id of the force;
-int PhysicsObject::addForce(glm::vec2 F, ForceType type)
+// if mode = IMPULSE: applies it once. returns std::list<Force>::iterator();
+// if mode = Continuous or mode == Walk: pushes it to a list of forces that gets applied every physicsUpdate(). returns the iterator of the force;
+std::list<Force>::iterator PhysicsObject::addForce(glm::vec2 F, ForceType type)
 {
 	if (type == Impulse) {
+		//TODO start using kinetic energy instead of adding just raw speed
 		linearSpeed.x += F.x;linearSpeed.y += F.y;
+		return std::list<Force>::iterator();
 	}
 	else if (type == Continuous || type == Walk) {
-		//pick an index
-		//if something is fucked in this whole project, this is prolly it. sorry, i had a funny idea, okay?
-		auto iterator = Forces.begin();
-		int i = 0;
-		while (iterator != Forces.end() && i == iterator->first) {
-			i++;
-			iterator++;
-		}
-		if (iterator == Forces.end()) {
-			i++;
-		}
-
-		Forces[i] = Force(F, type);
-		return i;
+		Forces.push_front(Force(F, type));	
+		return Forces.begin();
 	}
 
-	return -1;
+	
 }
 
-int PhysicsObject::addForce(Force F)
+//add a force with a Force object
+std::list<Force>::iterator PhysicsObject::addForce(Force F)
 {
 	return addForce(F.force, F.type);
 }
 
 
-//removes a force specified by the id
-bool PhysicsObject::removeForce(int id)
+//removes a force specified by the iterator
+void PhysicsObject::removeForce(std::list<Force>::iterator id)
 {
-	if (Forces.find(id) != Forces.end()) {
-		Forces.erase(id);
-		return true;
-	}
-	else {
-		return false;
-	}
+	this->Forces.erase(id);
 }
 
 // checks if two PhysicsObjects' hitboxes are coliding.

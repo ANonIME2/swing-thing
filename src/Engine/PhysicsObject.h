@@ -2,6 +2,8 @@
 #include "WorldObject.h"
 #include <vector>
 #include <map>
+#include <algorithm>
+#include <list>
 
 class Force;
 enum ForceType;
@@ -21,14 +23,14 @@ public:
 	//the following methods are (probably) only used by dynamic objects 
 	void physicsUpdate(double time = 1.0);
 	void physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, double time = 1.0);
-	int addForce(glm::vec2 F, ForceType type);
-	int addForce(Force F);
-	bool removeForce(int id);
+	std::list<Force>::iterator addForce(glm::vec2 F, ForceType type);
+	std::list<Force>::iterator addForce(Force F);
+	void removeForce(std::list<Force>::iterator id);
 	std::pair<int, int> colides(PhysicsObject* B);
 
 
 	glm::vec2 linearSpeed, acceleration;
-	std::map<int, Force> Forces;
+	std::list<Force> Forces;
 	std::vector<glm::vec2>* hitbox;
 	PhysicsObjectType physicsType;
 	float linearDamping, angularDamping, gravity, mass;

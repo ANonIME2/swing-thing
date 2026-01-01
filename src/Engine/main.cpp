@@ -13,7 +13,7 @@ unsigned int WINDOW_WIDTH = 1200, WINDOW_HEIGHT = 800;
 unsigned int FRAMERATE_GOAL = 120;
 Level level(FRAMERATE_GOAL);
 Player player(&level, Dynamic, -30.2f, 0.0f, 40.0f, 60.0f, 1.0f, 0.01f, 0.0f, 0.2f, 50.0f);
-PhysicsObject otherObject(&level, Static, 0.0f, -30.0f, 80.0f, 60.0f);
+PhysicsObject otherObject(&level, Static, 123.0f, -130.0f, 180.0f, 60.0f);
 //unsigned int VBO;
 //unsigned int VAO;
 //unsigned int EBO;

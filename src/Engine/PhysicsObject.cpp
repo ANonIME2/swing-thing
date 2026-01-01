@@ -8,7 +8,6 @@
 
 
 
-
 PhysicsObject::PhysicsObject(Level* level, PhysicsObjectType physicsType, float x, float y, float width, float height, float mass, float linearDamping, float angularDamping, float gravity)
 	: WorldObject(x, y, width, height)
 {
@@ -79,29 +78,49 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 
 	// collision detection
 	for (auto i : physicsObjects) {
-		std::pair<int, int> colidingEdges = this->colides(i);
-		if (colidingEdges.first != -1) {
+		std::vector<std::pair<int, int>> collidingEdges = this->collides(i);
+		while (collidingEdges.size() != 0) {
 			if (i->physicsType == Static) {
+				//this only works if one vertex is inside the other object
 				//find which vertex is inside the other object
 				std::vector<glm::vec2> hitboxA = *(this->hitbox);
 				std::vector<glm::vec2> hitboxB = *(i->hitbox);
-				glm::vec2 A = hitboxA[colidingEdges.first];
-				glm::vec2 B = hitboxA[(colidingEdges.first+1)%hitboxA.size()];
-				glm::vec2 C = hitboxB[colidingEdges.second];
-				glm::vec2 D = hitboxB[(colidingEdges.second+1)%hitboxB.size()];
+				glm::vec2 A = hitboxA[collidingEdges[0].first] + this->pos;
+				glm::vec2 B = hitboxA[(collidingEdges[0].first + 1) % hitboxA.size()] + this->pos;
+				glm::vec2 C = hitboxB[collidingEdges[0].second] + i->pos;
+				glm::vec2 D = hitboxB[(collidingEdges[0].second + 1) % hitboxB.size()] + i->pos;
 				glm::vec2 CD = D - C;
-				//delta is the vector from the vertex inside this and the vertex inside the other object
+
+				//delta is the vector from the vertex inside this object and the vertex inside the other object
 				glm::vec2 delta = this->pos + B - i->pos - C;
 				float cross = CD.x * delta.y - CD.y * delta.x;
 				if (cross > 0) {
 					std::swap(A, B);
 				}
 
-				//snap this object back to where they don't collide
-				glm::vec2 n = -glm::normalize(this->linearSpeed);
-				float scalar = std::min(abs(delta.x / n.x), abs(delta.y / n.y));
-				this->pos += n * scalar;
+				//snap this object back to where they don't collide and update the speed accordingly
+				// get the cos of the angle between AB and CD
+				/*glm::vec2 oldSpeed = this->linearSpeed;
+				float lengthOldSpeed = glm::length(oldSpeed);
+				float dot = glm::dot(oldSpeed, CD);
+				float cos = glm::cos(dot / (lengthOldSpeed * glm::length(CD)));
+				float cosTimesLengthOldSpeed = cos * lengthOldSpeed;
+				this->linearSpeed = cosTimesLengthOldSpeed *glm::normalize(CD);*/
+				// how much this object needs to snap back
+				glm::vec2 snap = distVecPoint(C, D, B);
+				// find out if we have to move this by snap or -snap
+				// IMPORTANT this part relies on the format returned by collides().
+				// And that is vector<pair<int, int>> with the first int in the pair
+				// belonging to THIS OBJECT AND NOT THE OTHER ONE
+				if (collidingEdges[0].second == collidingEdges[1].second) {
+					this->pos += snap;
+				}
+				else {
+					this->pos -= snap;
+				}
+
 			}
+			collidingEdges = this->collides(i);
 		}
 	}
 }
@@ -141,12 +160,13 @@ void PhysicsObject::removeForce(std::list<Force>::iterator id)
 
 // checks if two PhysicsObjects' hitboxes are coliding.
 // if they are, returns the indexes of the edges that are intersecting.
-// else, return std::make_pair(-1, -1)
-std::pair<int, int>  PhysicsObject::colides(PhysicsObject* B)
+// FORMAT: vector<pair<int, int>> with the first int in the pair
+// belonging to THIS OBJECT and the second one TO OBJECT B
+std::vector<std::pair<int, int>>  PhysicsObject::collides(PhysicsObject* B)
 {
 	// check if it's not the same object
 	if (B == this) {
-		return std::make_pair(-1, -1);
+		return std::vector<std::pair<int, int>>();
 	}
 
 	std::vector<glm::vec2>
@@ -158,7 +178,7 @@ std::pair<int, int>  PhysicsObject::colides(PhysicsObject* B)
 	int aSize = hitboxA.size();
 	int bSize = hitboxB.size();
 	if (hitboxVectorsA.size() == 0 || hitboxVectorsB.size() == 0) {
-		return std::make_pair(-1, -1);
+		return std::vector<std::pair<int, int>>();
 	}
 
 	for (int i = 0; i < hitboxVectorsA.size(); i++) {
@@ -173,45 +193,23 @@ std::pair<int, int>  PhysicsObject::colides(PhysicsObject* B)
 
 
 
-
+	std::vector<std::pair<int, int>> result;
 	// check if any of the edges intersect
 	for (int i = 0; i < aSize-1; i++) {
 		for (int j = 0; j < bSize-1; j++) {
 			if (intersects(hitboxA[i], hitboxA[i + 1], hitboxB[j], hitboxB[j + 1])) {
-				return std::make_pair(i, j);
+				result.push_back(std::make_pair(i, j));
 			}
 		}
 	}
 
 
-	return std::make_pair(-1, -1);
+	return result;
 }
 
 bool PhysicsObject::intersects(glm::vec2 A, glm::vec2 B, glm::vec2 C, glm::vec2 D) {
 	//checks if the line segment AB intersects the line segment CD
-	/*std::cout
-		<< "A = ("
-		<< A.x
-		<< ", "
-		<< A.y
-		<< ")"
-		<< "B = ("
-		<< B.x
-		<< ", "
-		<< B.y
-		<< ")"
-		<< "C = ("
-		<< C.x
-		<< ", "
-		<< C.y
-		<< ")"
-		<< "D = ("
-		<< D.x
-		<< ", "
-		<< D.y
-		<< ")"
-		<< std::endl;*/
-
+	
 	//assertions
 	glm::vec2* arr[4] = { &A, &B, &C, &D };
 	for (int i = 0; i < sizeof(arr) / sizeof(glm::vec2); i++) {
@@ -237,6 +235,25 @@ bool PhysicsObject::intersects(std::pair<float, float> A, std::pair<float, float
 bool PhysicsObject::intersects(std::pair<float, float>* A, std::pair<float, float>* B, std::pair<float, float>* C, std::pair<float, float>* D)
 {
 	return this->intersects(glm::vec2(A->first, A->second), glm::vec2(B->first, B->second), glm::vec2(C->first, C->second), glm::vec2(D->first, D->second));
+}
+
+// let A, B and C be poins in 2D space
+// returns a vector from C to the closest point on the vector from A to B
+glm::vec2 PhysicsObject::distVecPoint(glm::vec2 A, glm::vec2 B, glm::vec2 C)
+{	
+	float PI = 2 * cos(0.0);
+	glm::vec2 AB = A - B;
+	glm::vec2 AC = A - C;
+	//gamma = angle BAC 
+	float gamma = acos(glm::dot(AB, AC) / (glm::length(AB) * glm::length(AC)));
+	float beta = PI / 2 - gamma;
+	//theorem of sines
+	float rLength = glm::length(AC) * sin(gamma);
+	float CDAngle = atan(AB.y / AB.x);
+	//sum of angles in a triangle. two of the triangles vertices are on the OX axis and the third is the D point
+	float rAngle = PI / 2 + CDAngle;
+
+	return glm::vec2(rLength/cos(rAngle), rLength/sin(rAngle));
 }
 
 bool PhysicsObject::intersects(std::pair<float*, float*> A, std::pair<float*, float*> B, std::pair<float*, float*> C, std::pair<float*, float*> D)

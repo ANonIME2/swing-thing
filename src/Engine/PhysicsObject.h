@@ -26,7 +26,7 @@ public:
 	std::list<Force>::iterator addForce(glm::vec2 F, ForceType type);
 	std::list<Force>::iterator addForce(Force F);
 	void removeForce(std::list<Force>::iterator id);
-	std::pair<int, int> colides(PhysicsObject* B);
+	std::vector<std::pair<int, int>> collides(PhysicsObject* B);
 
 
 	glm::vec2 linearSpeed, acceleration;
@@ -41,7 +41,7 @@ private:
 	bool intersects(std::pair<float, float> A, std::pair<float, float> B, std::pair<float, float> C, std::pair<float, float> D);
 	bool intersects(std::pair<float*, float*> A, std::pair<float*, float*> B, std::pair<float*, float*> C, std::pair<float*, float*> D);
 	bool intersects(std::pair<float, float>* A, std::pair<float, float>* B, std::pair<float, float>* C, std::pair<float, float>* D);
-
+	glm::vec2 distVecPoint(glm::vec2 A, glm::vec2 B, glm::vec2 C);
 
 };
 

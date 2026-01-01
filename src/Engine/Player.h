@@ -17,7 +17,7 @@ public:
 		float angularDamping = 0.0f,
 		float gravity = 0.0f,
 		float jumpForce = 50.0f,
-		float walkSpeed = 1.0f
+		float walkSpeed = 3.0f
 	);
 
 	void jump();

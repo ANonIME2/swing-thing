@@ -7,7 +7,6 @@
 #include <algorithm>
 
 
-
 PhysicsObject::PhysicsObject(Level* level, PhysicsObjectType physicsType, float x, float y, float width, float height, float mass, float linearDamping, float angularDamping, float gravity)
 	: WorldObject(x, y, width, height)
 {
@@ -35,9 +34,6 @@ PhysicsObject::PhysicsObject(Level* level, PhysicsObjectType physicsType, float 
 	}
 
 }
-
-
-
 
 
 //updates all physics related things. speed, acceleration, position. handles Continuous forces. time means how many frames long was the lasts frame.
@@ -107,7 +103,7 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 				float cosTimesLengthOldSpeed = cos * lengthOldSpeed;
 				this->linearSpeed = cosTimesLengthOldSpeed *glm::normalize(CD);*/
 				// how much this object needs to snap back
-				glm::vec2 snap = distVecPoint(C, D, B);
+ 				glm::vec2 snap = distVecPoint(C, D, B);
 				// find out if we have to move this by snap or -snap
 				// IMPORTANT this part relies on the format returned by collides().
 				// And that is vector<pair<int, int>> with the first int in the pair
@@ -118,7 +114,7 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 				else {
 					this->pos -= snap;
 				}
-
+				this->pos = glm::vec2(std::round(this->pos.x * 100) / 100, std::round(this->pos.y * 100) / 100);
 			}
 			collidingEdges = this->collides(i);
 		}
@@ -207,8 +203,9 @@ std::vector<std::pair<int, int>>  PhysicsObject::collides(PhysicsObject* B)
 	return result;
 }
 
+//checks if the line segment AB intersects the line segment CD
+// returns false if, for example, point A is ON the line segment CD. 
 bool PhysicsObject::intersects(glm::vec2 A, glm::vec2 B, glm::vec2 C, glm::vec2 D) {
-	//checks if the line segment AB intersects the line segment CD
 	
 	//assertions
 	glm::vec2* arr[4] = { &A, &B, &C, &D };
@@ -221,7 +218,7 @@ bool PhysicsObject::intersects(glm::vec2 A, glm::vec2 B, glm::vec2 C, glm::vec2 
 	float uA = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
 	float uB = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
 	//std::cout << A.x << " " << A.y << " " << B.x << " " << B.y << " " << C.x << " " << C.y << " " << D.x << " " << D.y << " " << std::endl;
-	if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
+	if (uA > 0 && uA < 1 && uB > 0 && uB < 1) {
 		return true;
 	}
 	return false;
@@ -231,32 +228,32 @@ bool PhysicsObject::intersects(std::pair<float, float> A, std::pair<float, float
 {
 	return this->intersects(glm::vec2(A.first, A.second), glm::vec2(B.first, B.second), glm::vec2(C.first, C.second), glm::vec2(D.first, D.second));
 }
-
 bool PhysicsObject::intersects(std::pair<float, float>* A, std::pair<float, float>* B, std::pair<float, float>* C, std::pair<float, float>* D)
 {
 	return this->intersects(glm::vec2(A->first, A->second), glm::vec2(B->first, B->second), glm::vec2(C->first, C->second), glm::vec2(D->first, D->second));
+}
+bool PhysicsObject::intersects(std::pair<float*, float*> A, std::pair<float*, float*> B, std::pair<float*, float*> C, std::pair<float*, float*> D)
+{
+	return this->intersects(glm::vec2(*A.first, *A.second), glm::vec2(*B.first, *B.second), glm::vec2(*C.first, *C.second), glm::vec2(*D.first, *D.second));
 }
 
 // let A, B and C be poins in 2D space
 // returns a vector from C to the closest point on the vector from A to B
 glm::vec2 PhysicsObject::distVecPoint(glm::vec2 A, glm::vec2 B, glm::vec2 C)
 {	
-	float PI = 2 * cos(0.0);
-	glm::vec2 AB = A - B;
-	glm::vec2 AC = A - C;
+	float PI = 2 * acos(0.0);
+	glm::vec2 AB = B - A;
+	glm::vec2 AC = C - A;
 	//gamma = angle BAC 
 	float gamma = acos(glm::dot(AB, AC) / (glm::length(AB) * glm::length(AC)));
+	//beta = angle ACB (sum of angles in a triangle)
 	float beta = PI / 2 - gamma;
 	//theorem of sines
-	float rLength = glm::length(AC) * sin(gamma);
+ 	float rLength = glm::length(AC) * sin(gamma);
 	float CDAngle = atan(AB.y / AB.x);
 	//sum of angles in a triangle. two of the triangles vertices are on the OX axis and the third is the D point
 	float rAngle = PI / 2 + CDAngle;
 
-	return glm::vec2(rLength/cos(rAngle), rLength/sin(rAngle));
+	return glm::vec2(rLength * cos(rAngle), rLength * sin(rAngle));
 }
 
-bool PhysicsObject::intersects(std::pair<float*, float*> A, std::pair<float*, float*> B, std::pair<float*, float*> C, std::pair<float*, float*> D)
-{
-	return this->intersects(glm::vec2(*A.first, *A.second), glm::vec2(*B.first, *B.second), glm::vec2(*C.first, *C.second), glm::vec2(*D.first, *D.second));
-}

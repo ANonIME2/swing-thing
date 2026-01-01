@@ -214,10 +214,12 @@ int main() {
 
 	glClearColor(40.0f / 255, 40.0f / 255, 40.0f / 255, 1.0f);
 	//render loop
+	int frameId = 0;
 	while (!glfwWindowShouldClose(window)) {
 		//input
 		processInput(window);
-
+		std::cout << frameId << std::endl;
+		frameId++;
 		//physycs updates
 		level.physicsUpdate();
 

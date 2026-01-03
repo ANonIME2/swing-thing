@@ -75,7 +75,8 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 	// collision detection
 	for (auto i : physicsObjects) {
 		std::vector<std::pair<int, int>> collidingEdges = this->collides(i);
-		while (collidingEdges.size() != 0) {
+		//while (collidingEdges.size() != 0) {
+		if (collidingEdges.size() != 0) {
 			if (i->physicsType == Static) {
 				//this only works if one vertex is inside the other object
 				//find which vertex is inside the other object
@@ -87,9 +88,12 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 				glm::vec2 D = hitboxB[(collidingEdges[0].second + 1) % hitboxB.size()] + i->pos;
 				glm::vec2 CD = D - C;
 
-				//delta is the vector from the vertex inside this object and the vertex inside the other object
-				glm::vec2 delta = this->pos + B - i->pos - C;
-				float cross = CD.x * delta.y - CD.y * delta.x;
+				// delta is the vector from the B and the vertex inside the other object
+				// if it's smaller than 0, that means that B is inside the other object
+				// (i mean it could be outside, if it was poking out the other end
+				// of the other object, but that doesn't change anything)
+				glm::vec2 BC = B - C;
+				float cross = CD.x * BC.y - CD.y * BC.x;
 				if (cross > 0) {
 					std::swap(A, B);
 				}
@@ -101,10 +105,12 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 				float dot = glm::dot(oldSpeed, CD);
 				float cos = glm::cos(dot / (lengthOldSpeed * glm::length(CD)));
 				float cosTimesLengthOldSpeed = cos * lengthOldSpeed;
-				this->linearSpeed = cosTimesLengthOldSpeed *glm::normalize(CD);*/
+				this->linearSpeed = cosTimesLengthOldSpeed * glm::normalize(CD);*/
+				this->linearSpeed = glm::vec2(0.0f, 0.0f);
 				// how much this object needs to snap back
- 				glm::vec2 snap = distVecPoint(C, D, B);
+				glm::vec2 snap = distVecPoint(C, D, B);
 				// find out if we have to move this by snap or -snap
+				// if this has a vertex inside the other object, move by snap, else -snap
 				// IMPORTANT this part relies on the format returned by collides().
 				// And that is vector<pair<int, int>> with the first int in the pair
 				// belonging to THIS OBJECT AND NOT THE OTHER ONE
@@ -114,10 +120,12 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 				else {
 					this->pos -= snap;
 				}
+
 				this->pos = glm::vec2(std::round(this->pos.x * 100) / 100, std::round(this->pos.y * 100) / 100);
 			}
-			collidingEdges = this->collides(i);
 		}
+			/*collidingEdges = this->collides(i);
+		}*/
 	}
 }
 
@@ -246,14 +254,24 @@ glm::vec2 PhysicsObject::distVecPoint(glm::vec2 A, glm::vec2 B, glm::vec2 C)
 	glm::vec2 AC = C - A;
 	//gamma = angle BAC 
 	float gamma = acos(glm::dot(AB, AC) / (glm::length(AB) * glm::length(AC)));
-	//beta = angle ACB (sum of angles in a triangle)
-	float beta = PI / 2 - gamma;
+	
 	//theorem of sines
  	float rLength = glm::length(AC) * sin(gamma);
 	float CDAngle = atan(AB.y / AB.x);
-	//sum of angles in a triangle. two of the triangles vertices are on the OX axis and the third is the D point
+	// rAngle = CDAngle + 90deg, so CD and r are perpendicular
+	// we will later check if this actually should have been - 90deg
 	float rAngle = PI / 2 + CDAngle;
-
-	return glm::vec2(rLength * cos(rAngle), rLength * sin(rAngle));
+	glm::vec2 r(rLength * cos(rAngle), rLength * sin(rAngle));
+	// check if we have to flip r
+	// AR and ARprime are vectors from A to: A+r and A-r respectively
+	glm::vec2 AR = C + r - A;
+	glm::vec2 ARprime = C - r - A;
+	// if the distance from A to C+r is smaller than from A to C-r
+	if (AR.x * AR.x + AR.y * AR.y < ARprime.x * ARprime.x + ARprime.y * ARprime.y) {
+		return r;
+	}
+	else {
+		return -r;
+	}
 }
 

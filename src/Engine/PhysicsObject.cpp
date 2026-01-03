@@ -73,56 +73,77 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 	this->physicsUpdate(time);
 
 	// collision detection
-	for (auto i : physicsObjects) {
-		std::vector<std::pair<int, int>> collidingEdges = this->collides(i);
-		//while (collidingEdges.size() != 0) {
-		if (collidingEdges.size() != 0) {
-			if (i->physicsType == Static) {
-				//this only works if one vertex is inside the other object
-				//find which vertex is inside the other object
-				std::vector<glm::vec2> hitboxA = *(this->hitbox);
-				std::vector<glm::vec2> hitboxB = *(i->hitbox);
-				glm::vec2 A = hitboxA[collidingEdges[0].first] + this->pos;
-				glm::vec2 B = hitboxA[(collidingEdges[0].first + 1) % hitboxA.size()] + this->pos;
-				glm::vec2 C = hitboxB[collidingEdges[0].second] + i->pos;
-				glm::vec2 D = hitboxB[(collidingEdges[0].second + 1) % hitboxB.size()] + i->pos;
-				glm::vec2 CD = D - C;
+	glm::vec2 primitiveSnap = -glm::normalize(this->linearSpeed);
+	for (auto other : physicsObjects) {
+		std::vector<std::pair<int, int>> collidingEdges = this->collides(other);
+		float snapMagnitude = 0;
+		for (int j = 0; j < collidingEdges.size(); j++) {
+			std::vector<glm::vec2> hitboxA = *(this->hitbox);
+			std::vector<glm::vec2> hitboxB = *(other->hitbox);
+			glm::vec2 A = hitboxA[collidingEdges[j].first] + this->pos;
+			glm::vec2 B = hitboxA[(collidingEdges[j].first + 1) % hitboxA.size()] + this->pos;
+			glm::vec2 C = hitboxB[collidingEdges[j].second] + other->pos;
+			glm::vec2 D = hitboxB[(collidingEdges[j].second + 1) % hitboxB.size()] + other->pos;
+			glm::vec2 BC = B - C;
+			glm::vec2 CD = D - C;
 
-				// delta is the vector from the B and the vertex inside the other object
-				// if it's smaller than 0, that means that B is inside the other object
-				// (i mean it could be outside, if it was poking out the other end
-				// of the other object, but that doesn't change anything)
-				glm::vec2 BC = B - C;
-				float cross = CD.x * BC.y - CD.y * BC.x;
-				if (cross > 0) {
-					std::swap(A, B);
-				}
-
-				//snap this object back to where they don't collide and update the speed accordingly
-				// get the cos of the angle between AB and CD
-				/*glm::vec2 oldSpeed = this->linearSpeed;
-				float lengthOldSpeed = glm::length(oldSpeed);
-				float dot = glm::dot(oldSpeed, CD);
-				float cos = glm::cos(dot / (lengthOldSpeed * glm::length(CD)));
-				float cosTimesLengthOldSpeed = cos * lengthOldSpeed;
-				this->linearSpeed = cosTimesLengthOldSpeed * glm::normalize(CD);*/
-				this->linearSpeed = glm::vec2(0.0f, 0.0f);
-				// how much this object needs to snap back
-				glm::vec2 snap = distVecPoint(C, D, B);
-				// find out if we have to move this by snap or -snap
-				// if this has a vertex inside the other object, move by snap, else -snap
-				// IMPORTANT this part relies on the format returned by collides().
-				// And that is vector<pair<int, int>> with the first int in the pair
-				// belonging to THIS OBJECT AND NOT THE OTHER ONE
-				if (collidingEdges[0].second == collidingEdges[1].second) {
-					this->pos += snap;
-				}
-				else {
-					this->pos -= snap;
-				}
-
-				this->pos = glm::vec2(std::round(this->pos.x * 100) / 100, std::round(this->pos.y * 100) / 100);
+			// find which vertex is inside the other object
+			// if cross is smaller than 0, that means that B is inside the other object
+			// (i mean it could be outside, if it was poking out the other end
+			// of the other object, but that doesn't change anything)
+			float cross = CD.x * BC.y - CD.y * BC.x;
+			if (cross > 0) {
+				std::swap(A, B);
 			}
+
+			// line segment from B to primitiveStep has length = 1 and the same angle as this->linearSpeed
+			glm::vec2 primitiveEndB = B + primitiveSnap;
+			for (int otherEdge = 0; otherEdge < hitboxB.size(); otherEdge++) {
+				glm::vec2 E = hitboxB[otherEdge] + other->pos;
+				glm::vec2 F = hitboxB[(otherEdge + 1) % hitboxB.size()] + other->pos;
+				float ua = ((F.x - E.x) * (A.y - E.y) - (F.y - E.y) * (A.x - E.x)) / ((F.y - E.y) * (B.x - A.x) - (F.x - E.x) * (B.y - A.y));
+				float ub = ((B.x - A.x) * (A.y - C.y) - (B.y - A.y) * (A.x - C.x)) / ((D.y - C.y) * (B.x - A.x) - (D.x - C.x) * (B.y - A.y));
+				if (0 < ua && ua < 1 && ub > snapMagnitude) {
+					snapMagnitude = ub;
+				}
+			}
+		}
+
+
+
+
+		if (other->physicsType == Static) {
+			// yeeeah, so i think that ALL of the code in this if statement is USELESS and i only have to update this->linearSpeed here
+
+
+
+
+			//// delta is the vector from the B and the vertex inside the other object
+
+			////snap this object back to where they don't collide and update the speed accordingly
+			//// get the cos of the angle between AB and CD
+			///*glm::vec2 oldSpeed = this->linearSpeed;
+			//float lengthOldSpeed = glm::length(oldSpeed);
+			//float dot = glm::dot(oldSpeed, CD);
+			//float cos = glm::cos(dot / (lengthOldSpeed * glm::length(CD)));
+			//float cosTimesLengthOldSpeed = cos * lengthOldSpeed;
+			//this->linearSpeed = cosTimesLengthOldSpeed * glm::normalize(CD);*/
+			//this->linearSpeed = glm::vec2(0.0f, 0.0f);
+			//// how much this object needs to snap back
+			//glm::vec2 snap = distVecPoint(C, D, B);
+			//// find out if we have to move this by snap or -snap
+			//// if this has a vertex inside the other object, move by snap, else -snap
+			//// IMPORTANT this part relies on the format returned by collides().
+			//// And that is vector<pair<int, int>> with the first int in the pair
+			//// belonging to THIS OBJECT AND NOT THE OTHER ONE
+			//if (collidingEdges[0].second == collidingEdges[1].second) {
+			//	this->pos += snap;
+			//}
+			//else {
+			//	this->pos -= snap;
+			//}
+
+			//this->pos = glm::vec2(std::round(this->pos.x * 100) / 100, std::round(this->pos.y * 100) / 100);
 		}
 			/*collidingEdges = this->collides(i);
 		}*/
@@ -222,9 +243,9 @@ bool PhysicsObject::intersects(glm::vec2 A, glm::vec2 B, glm::vec2 C, glm::vec2 
 	}
 
 
-	float x1 = A.x, x2 = B.x, x3 = C.x, x4 = D.x, y1 = A.y, y2 = B.y, y3 = C.y, y4 = D.y;
-	float uA = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
-	float uB = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
+	float A.x = A.x, B.x = B.x, E.x = C.x, F.x = D.x, A.y = A.y, B.y = B.y, E.y = C.y, F.y = D.y;
+	float uA = ((F.x - E.x) * (A.y - E.y) - (F.y - E.y) * (A.x - E.x)) / ((F.y - E.y) * (B.x - A.x) - (F.x - E.x) * (B.y - A.y));
+	float uB = ((B.x - A.x) * (A.y - E.y) - (B.y - A.y) * (A.x - E.x)) / ((F.y - E.y) * (B.x - A.x) - (F.x - E.x) * (B.y - A.y));
 	//std::cout << A.x << " " << A.y << " " << B.x << " " << B.y << " " << C.x << " " << C.y << " " << D.x << " " << D.y << " " << std::endl;
 	if (uA > 0 && uA < 1 && uB > 0 && uB < 1) {
 		return true;

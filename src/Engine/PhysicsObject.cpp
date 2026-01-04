@@ -76,7 +76,7 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 	glm::vec2 primitiveSnap = -glm::normalize(this->linearSpeed);
 	for (auto other : physicsObjects) {
 		std::vector<std::pair<int, int>> collidingEdges = this->collides(other);
-		float snapMagnitude = 0;
+		float snapMagnitude = 1;
 		for (int j = 0; j < collidingEdges.size(); j++) {
 			std::vector<glm::vec2> hitboxA = *(this->hitbox);
 			std::vector<glm::vec2> hitboxB = *(other->hitbox);
@@ -101,14 +101,18 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 			for (int otherEdge = 0; otherEdge < hitboxB.size(); otherEdge++) {
 				glm::vec2 E = hitboxB[otherEdge] + other->pos;
 				glm::vec2 F = hitboxB[(otherEdge + 1) % hitboxB.size()] + other->pos;
-				float ua = ((F.x - E.x) * (A.y - E.y) - (F.y - E.y) * (A.x - E.x)) / ((F.y - E.y) * (B.x - A.x) - (F.x - E.x) * (B.y - A.y));
-				float ub = ((B.x - A.x) * (A.y - C.y) - (B.y - A.y) * (A.x - C.x)) / ((D.y - C.y) * (B.x - A.x) - (D.x - C.x) * (B.y - A.y));
-				if (0 < ua && ua < 1 && ub > snapMagnitude) {
-					snapMagnitude = ub;
+				float ua = ((F.x - E.x) * (primitiveEndB.y - E.y) - (F.y - E.y) * (primitiveEndB.x - E.x)) / ((F.y - E.y) * (B.x - primitiveEndB.x) - (F.x - E.x) * (B.y - primitiveEndB.y));
+				float ub = ((B.x - primitiveEndB.x) * (primitiveEndB.y - C.y) - (B.y - primitiveEndB.y) * (primitiveEndB.x - C.x)) / ((D.y - C.y) * (B.x - primitiveEndB.x) - (D.x - C.x) * (B.y - primitiveEndB.y));
+				if (0 < ub && ub < 1 && ua < snapMagnitude && isfinite(ua) && isfinite(ub)) {
+					snapMagnitude = ua;
 				}
 			}
-		}
 
+			if (j == collidingEdges.size() - 1) {
+				this->pos -= primitiveSnap * (snapMagnitude - 1);
+			}
+		}
+		
 
 
 
@@ -116,7 +120,7 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 			// yeeeah, so i think that ALL of the code in this if statement is USELESS and i only have to update this->linearSpeed here
 
 
-
+			;
 
 			//// delta is the vector from the B and the vertex inside the other object
 
@@ -243,9 +247,9 @@ bool PhysicsObject::intersects(glm::vec2 A, glm::vec2 B, glm::vec2 C, glm::vec2 
 	}
 
 
-	float A.x = A.x, B.x = B.x, E.x = C.x, F.x = D.x, A.y = A.y, B.y = B.y, E.y = C.y, F.y = D.y;
-	float uA = ((F.x - E.x) * (A.y - E.y) - (F.y - E.y) * (A.x - E.x)) / ((F.y - E.y) * (B.x - A.x) - (F.x - E.x) * (B.y - A.y));
-	float uB = ((B.x - A.x) * (A.y - E.y) - (B.y - A.y) * (A.x - E.x)) / ((F.y - E.y) * (B.x - A.x) - (F.x - E.x) * (B.y - A.y));
+	float x1 = A.x, x2 = B.x, x3 = C.x, x4 = D.x, y1 = A.y, y2 = B.y, y3 = C.y, y4 = D.y;
+	float uA = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
+	float uB = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
 	//std::cout << A.x << " " << A.y << " " << B.x << " " << B.y << " " << C.x << " " << C.y << " " << D.x << " " << D.y << " " << std::endl;
 	if (uA > 0 && uA < 1 && uB > 0 && uB < 1) {
 		return true;

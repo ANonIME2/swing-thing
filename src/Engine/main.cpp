@@ -47,11 +47,16 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
 		player.walkLeft();
 	}
+	else {
+		player.stopLeft();
+	}
 	
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
 		player.walkRight();
 	}
-
+	else{
+		player.stopRight();
+	}
 	
 }
 
@@ -218,7 +223,7 @@ int main() {
 	while (!glfwWindowShouldClose(window)) {
 		//input
 		processInput(window);
-		std::cout << frameId << std::endl;
+		std::cout << player.walkForces.forces.size() << std::endl;
 		frameId++;
 		//physycs updates
 		level.physicsUpdate();

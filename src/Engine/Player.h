@@ -1,10 +1,11 @@
 #pragma once
 #include "PhysicsObject.h"
 class Level;
+
+
 class Player : public PhysicsObject
 {
 public:
-
 	Player(
 		Level* level,
 		PhysicsObjectType physicsType,
@@ -24,7 +25,11 @@ public:
 	void walk(glm::vec2 direction);
 	void walkRight();
 	void walkLeft();
+	void stopRight();
+	void stopLeft();
 	bool canJump = false;
 	float jumpForce, walkSpeed;
-
+private:
+	std::list<glm::vec2>::iterator walkRightForceIt, walkLeftForceIt;
+	bool walkingRight = false, walkingLeft = false;
 };

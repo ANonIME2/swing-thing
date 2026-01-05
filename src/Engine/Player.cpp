@@ -1,5 +1,4 @@
 #include "Player.h"
-#include "Force.h"
 #include "Level.h"
 #include <iostream>
 Player::Player(Level* level, PhysicsObjectType physicsType, float x, float y, float width, float height, float mass, float linearDamping, float angularDamping, float gravity, float jumpForce, float walkSpeed)
@@ -10,7 +9,7 @@ Player::Player(Level* level, PhysicsObjectType physicsType, float x, float y, fl
 }
 void Player::jump()
 {
-	addForce(glm::vec2(0.0f, this->jumpForce), Impulse);
+	addImpulse(glm::vec2(0.0f, this->jumpForce));
 }
 
 void Player::walk(glm::vec2 direction)
@@ -20,11 +19,32 @@ void Player::walk(glm::vec2 direction)
 
 void Player::walkRight()
 {
-	walk(glm::vec2(1, 0));
+	if (!this->walkingRight) {
+		this->walkRightForceIt = this->walkForces.add(glm::vec2(this->walkSpeed, 0.0f));
+		this->walkingRight = true;
+	}
 }
 
 void Player::walkLeft()
 {
-	walk(glm::vec2(-1, 0));
+	if (!walkingLeft) {
+		this->walkLeftForceIt = this->walkForces.add(glm::vec2(-this->walkSpeed, 0.0f));
+		this->walkingLeft = true;
+	}
+}
+
+void Player::stopRight()
+{
+	if (this->walkingRight) {
+		this->walkForces.remove(this->walkRightForceIt);
+		this->walkingRight = false;
+	}
+}
+void Player::stopLeft()
+{	
+	if (this->walkingLeft) {
+		this->walkForces.remove(this->walkLeftForceIt);
+		this->walkingLeft = false;
+	}
 }
 

@@ -1,0 +1,4 @@
+// i track my time spent on coding 
+FORMAT: [date];[time in hours];note
+9:01 PM 1/1/2026;2; 
+8:18 PM 1/3/2026;1;coming up with collision algorithms and finding out that i have to redo ALL of the math that told me how much do i have to snap back an element on collision

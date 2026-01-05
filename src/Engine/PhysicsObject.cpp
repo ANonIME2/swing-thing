@@ -1,8 +1,6 @@
 #include "PhysicsObject.h"
 #include <iostream>
-#include "Force.h"
 #include "Level.h"
-#include "Force.h"
 #include <vector>
 #include <algorithm>
 
@@ -26,7 +24,7 @@ PhysicsObject::PhysicsObject(Level* level, PhysicsObjectType physicsType, float 
 
 
 	level->addObject(this);
-	linearSpeed = glm::vec2(0.0f, 0.0f);
+	baseSpeed = glm::vec2(0.0f, 0.0f);
 	acceleration = glm::vec2(0.0f, 0.0f);
 	this->physicsType = physicsType;
 	for (int i = 0; i < sizeof(this->verticesVectors) / sizeof(float); i += 3) {
@@ -36,6 +34,11 @@ PhysicsObject::PhysicsObject(Level* level, PhysicsObjectType physicsType, float 
 }
 
 
+glm::vec2 PhysicsObject::speed()
+{
+	return this->baseSpeed + this->walkForces.sum;
+}
+
 //updates all physics related things. speed, acceleration, position. handles Continuous forces. time means how many frames long was the lasts frame.
 // if the game runs in 60 fps and the frame lasted 2/60 sec, time=2
 void PhysicsObject::physicsUpdate(double time)
@@ -44,24 +47,19 @@ void PhysicsObject::physicsUpdate(double time)
 	if (this->physicsType == Static) {
 		return;
 	}
-	//std::cout << "pos = (" << this->pos.x << ", " << this->pos.y << ")" << std::endl;
-	glm::vec2 time_v = { time, time };
-	linearSpeed.y -= gravity * time;
-	for (auto i: this->Forces) {
-		//TODO start using kinetic energy instead of adding just raw speed
-		if (i.type == Continuous) {
-			linearSpeed += i.force * time_v;
-		}
-		else {
-			this->pos += i.force;
-		}
-	}
 
-	linearSpeed += acceleration * time_v;
+	glm::vec2 timeVector = { time, time };
+	this->baseSpeed.y -= this->gravity * time;
+	
+	//TODO start using kinetic energy instead of adding just raw speed
+	this->baseSpeed += this->continuousForces.sum;
+	this->baseSpeed += this->acceleration * timeVector;
+
 
 	//linear damping
-	linearSpeed += -linearSpeed * glm::length(linearSpeed) * linearDamping * time_v;
-	pos += linearSpeed;
+	this->baseSpeed += -this->baseSpeed * glm::length(this->baseSpeed) * this->linearDamping * timeVector;
+	this->pos += this->walkForces.sum;
+	this->pos += this->baseSpeed;
 	//std::cout << "pos = (" << this->pos.x << ", " << this->pos.y << ")" << std::endl;
 	assert(isfinite(this->pos.x) && isfinite(this->pos.y) && "position must be finite");
 
@@ -73,7 +71,7 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 	this->physicsUpdate(time);
 
 	// collision detection
-	glm::vec2 primitiveSnap = -glm::normalize(this->linearSpeed);
+	glm::vec2 primitiveSnap = -glm::normalize(this->baseSpeed);
 	for (auto other : physicsObjects) {
 		std::vector<std::pair<int, int>> collidingEdges = this->collides(other);
 		float snapMagnitude = 1;
@@ -96,7 +94,7 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 				std::swap(A, B);
 			}
 
-			// line segment from B to primitiveStep has length = 1 and the same angle as this->linearSpeed
+			// line segment from B to primitiveStep has length = 1 and the same angle as this->speed()
 			glm::vec2 primitiveEndB = B + primitiveSnap;
 			for (int otherEdge = 0; otherEdge < hitboxB.size(); otherEdge++) {
 				glm::vec2 E = hitboxB[otherEdge] + other->pos;
@@ -112,80 +110,18 @@ void PhysicsObject::physicsUpdate(std::vector<PhysicsObject*>& physicsObjects, d
 				this->pos -= primitiveSnap * (snapMagnitude - 1);
 			}
 		}
-		
-
-
-
-		if (other->physicsType == Static) {
-			// yeeeah, so i think that ALL of the code in this if statement is USELESS and i only have to update this->linearSpeed here
-
-
-			;
-
-			//// delta is the vector from the B and the vertex inside the other object
-
-			////snap this object back to where they don't collide and update the speed accordingly
-			//// get the cos of the angle between AB and CD
-			///*glm::vec2 oldSpeed = this->linearSpeed;
-			//float lengthOldSpeed = glm::length(oldSpeed);
-			//float dot = glm::dot(oldSpeed, CD);
-			//float cos = glm::cos(dot / (lengthOldSpeed * glm::length(CD)));
-			//float cosTimesLengthOldSpeed = cos * lengthOldSpeed;
-			//this->linearSpeed = cosTimesLengthOldSpeed * glm::normalize(CD);*/
-			//this->linearSpeed = glm::vec2(0.0f, 0.0f);
-			//// how much this object needs to snap back
-			//glm::vec2 snap = distVecPoint(C, D, B);
-			//// find out if we have to move this by snap or -snap
-			//// if this has a vertex inside the other object, move by snap, else -snap
-			//// IMPORTANT this part relies on the format returned by collides().
-			//// And that is vector<pair<int, int>> with the first int in the pair
-			//// belonging to THIS OBJECT AND NOT THE OTHER ONE
-			//if (collidingEdges[0].second == collidingEdges[1].second) {
-			//	this->pos += snap;
-			//}
-			//else {
-			//	this->pos -= snap;
-			//}
-
-			//this->pos = glm::vec2(std::round(this->pos.x * 100) / 100, std::round(this->pos.y * 100) / 100);
-		}
-			/*collidingEdges = this->collides(i);
-		}*/
 	}
 }
 
-
-
-// adds a force.
-// if mode = IMPULSE: applies it once. returns std::list<Force>::iterator();
-// if mode = Continuous or mode == Walk: pushes it to a list of forces that gets applied every physicsUpdate(). returns the iterator of the force;
-std::list<Force>::iterator PhysicsObject::addForce(glm::vec2 F, ForceType type)
-{
-	if (type == Impulse) {
-		//TODO start using kinetic energy instead of adding just raw speed
-		linearSpeed.x += F.x;linearSpeed.y += F.y;
-		return std::list<Force>::iterator();
-	}
-	else if (type == Continuous || type == Walk) {
-		Forces.push_front(Force(F, type));	
-		return Forces.begin();
-	}
-
-	
-}
 
 //add a force with a Force object
-std::list<Force>::iterator PhysicsObject::addForce(Force F)
+void PhysicsObject::addImpulse(glm::vec2 F)
 {
-	return addForce(F.force, F.type);
+	// TODO use kinetic energy instead oof raw dogging it
+	this->baseSpeed += F;
 }
 
 
-//removes a force specified by the iterator
-void PhysicsObject::removeForce(std::list<Force>::iterator id)
-{
-	this->Forces.erase(id);
-}
 
 // checks if two PhysicsObjects' hitboxes are coliding.
 // if they are, returns the indexes of the edges that are intersecting.
@@ -300,3 +236,15 @@ glm::vec2 PhysicsObject::distVecPoint(glm::vec2 A, glm::vec2 B, glm::vec2 C)
 	}
 }
 
+std::list<glm::vec2>::iterator PhysicsObject::ForcesRegister::add(glm::vec2 F)
+{
+	this->forces.push_front(F);
+	this->sum += F;
+	return this->forces.begin();
+}
+
+void PhysicsObject::ForcesRegister::remove(std::list<glm::vec2>::iterator id)
+{
+	this->sum -= *id;
+	this->forces.erase(id);
+}
